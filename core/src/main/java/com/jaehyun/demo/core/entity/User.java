@@ -2,17 +2,17 @@ package com.jaehyun.demo.core.entity;
 
 import com.jaehyun.demo.core.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User implements Serializable {
 
@@ -35,5 +35,10 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role type;
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    private List<Reservation> reservations;
+
+
 
 }
