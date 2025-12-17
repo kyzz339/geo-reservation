@@ -3,38 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>메인 지도 페이지</title>
-
-    <!-- CSS는 head 안에, '/dist/'가 포함된 올바른 경로로 하나만 넣어야함 -->
     <link rel="stylesheet" href="/webjars/leaflet/1.9.4/dist/leaflet.css"/>
-
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; }
-        #map { width: 100%; height: 100vh; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Pretendard', sans-serif; }
+        #map { width: 100%; height: 100vh; z-index: 1; }
+
+        /* Header 스타일 */
+        .main-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000; /* 지도보다 위에 있어야 함 */
+        }
+        .logo { font-weight: bold; font-size: 1.2rem; color: #333; text-decoration: none; }
+        .nav-menu a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: #555;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .nav-menu a.signup-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .nav-menu a:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
 
+<header class="main-header">
+    <a href="/" class="logo">Reservation Map</a>
+    <nav class="nav-menu">
+        <a href="/login">로그인</a>
+        <a href="/signup" class="signup-btn">회원가입</a>
+    </nav>
+</header>
+
 <div id="map"></div>
 
-<!-- JS 라이브러리를 먼저 불러와야 함 ('/dist/' 포함 경로) -->
 <script src="/webjars/leaflet/1.9.4/dist/leaflet.js"></script>
-
-<!-- 라이브러리가 로드된 그 다음에 내 스크립트를 실행해야 'L' 객체를 찾을 수 있음 -->
 <script>
-    // 지도 초기화
-    var map = L.map('map').setView([37.5665, 126.9780], 12);
+    var map = L.map('map' , {
+        zoomControl: false
+    }).setView([37.5665, 126.9780], 12);
 
-    // 타일 레이어 추가
+    L.control.zoom({ //줌 표시
+        position: 'bottomright'
+    }).addTo(map);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 마커 표시
     L.marker([37.5665, 126.9780]).addTo(map)
-        .bindPopup("<b>서울 시청</b><br>메인 지도입니다.")
+        .bindPopup("<b>서울 시청</b>")
         .openPopup();
 </script>
-
 </body>
 </html>
