@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="header-css">
+    <style>
+        .main-header {
+            position: fixed; /* 페이지 최상단 고정 */
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .logo { font-weight: bold; font-size: 1.2rem; color: #333; text-decoration: none; }
+        .nav-menu a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: #555;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .nav-menu a.signup-btn { background-color: #007bff; color: white; }
+    </style>
+</th:block>
+
+<header th:fragment="main-header" class="main-header">
+    <a href="/" class="logo">Reservation Map</a>
+    <nav class="nav-menu" id="nav-menu">
+        <div id="auth-guest">
+            <a href="/auth/signIn">로그인</a>
+            <a href="/auth/signUp" class="signup-btn">회원가입</a>
+        </div>
+        <div id="auth-user" style="display: none;">
+            <span id="user-name-display" style="font-size: 0.9rem; color: #333; font-weight: bold;"></span>님
+            <a href="#" onclick="logout()" class="signup-btn">로그아웃</a>
+        </div>
+    </nav>
+</header>
+
+<th:block th:fragment="header-js">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('accessToken');
+            const guestMenu = document.getElementById('auth-guest');
+            const userMenu = document.getElementById('auth-user');
+            const nameDisplay = document.getElementById('user-name-display');
+
+            console.log("Token check:", token);
+            if (token) {
+                guestMenu.style.display = 'none';
+                userMenu.style.display = 'block';
+
+                fetch('/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("인증 실패"); // 서버 응답이 200이 아니면 바로 catch로 보냄
+                        return res.json();
+                    })
+                    .then(data => {
+                        nameDisplay.innerText = data.name;
+                    })
+                    .catch(() => {
+                        // 토큰이 이상하거나 만료되었다면 로컬 스토리지를 비우고 다시 로그인하게 함
+                        logout();
+                    });
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            alert("로그아웃 되었습니다.");
+            window.location.href = "/";
+        }
+    </script>
+</th:block>
+</html>

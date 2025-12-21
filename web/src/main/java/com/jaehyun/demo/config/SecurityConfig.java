@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/" , "/").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/auth/**").permitAll() // 로그인/회원가입은 허용
+                        .requestMatchers("/auth/signUp" , "/auth/signIn").permitAll() // 로그인/회원가입은 허용
                         //나머지는 인증 필요
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

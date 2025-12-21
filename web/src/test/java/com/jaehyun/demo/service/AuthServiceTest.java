@@ -4,6 +4,7 @@ import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.enums.Role;
 import com.jaehyun.demo.dto.request.SignInRequest;
+import com.jaehyun.demo.dto.request.SignUpRequest;
 import com.jaehyun.demo.dto.response.TokenResponse;
 import com.jaehyun.demo.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +36,7 @@ public class AuthServiceTest {
     @Test
     @DisplayName("회원가입 테스트")
     void signUp_Success(){
-        User user = User.builder()          //user 생성
+        SignUpRequest user = SignUpRequest.builder()
                 .email("test@test.com")
                 .password("raw-password")
                 .name("테스트 계정")

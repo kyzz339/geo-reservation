@@ -4,6 +4,8 @@ import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.enums.Role;
 import com.jaehyun.demo.dto.request.SignInRequest;
+import com.jaehyun.demo.dto.request.SignUpRequest;
+import com.jaehyun.demo.dto.response.SignUpResponse;
 import com.jaehyun.demo.dto.response.TokenResponse;
 import com.jaehyun.demo.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +20,22 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public void signUp(User user) {
+    public SignUpResponse signUp(SignUpRequest request) {
+
+        if(userDao.existsByEmail(request.getEmail())){
+            throw new IllegalArgumentException("이미 가입된 이메일 입니다.");
+        }
 
         User savedUser = User.builder()
-                .email(user.getEmail())
-                .password(passwordEncoder.encode(user.getPassword()))
-                .name(user.getName())
-                .type(user.getType() != null ? user.getType() : Role.USER)
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .name(request.getName())
+                .type(request.getType() != null ? request.getType() : Role.USER)
                 .build();
 
         userDao.save(savedUser);
+
+        return new SignUpResponse(savedUser.getEmail() , savedUser.getName());
     }
 
     public TokenResponse signIn(SignInRequest signInRequest) {
@@ -48,5 +56,11 @@ public class AuthService {
                 .build();
     }
 
+    public String findByEmail(String email){
 
+        User user = userDao.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일 입니다."));
+
+        return user.getName();
+    }
 }
