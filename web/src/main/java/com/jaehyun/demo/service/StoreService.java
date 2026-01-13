@@ -7,6 +7,10 @@ import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,16 +21,20 @@ public class StoreService {
     private final UserDao userDao;
     private final StoreDao storeDao;
 
+    private final GeometryFactory geometryFactory;
+
     //매장 생성 -> owner
     public CreateStoreResponse createStore(CreateStoreRequest request , UserDetails userDetails){
 
         User owner = userDao.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        Point location = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
+
         Store store = Store.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .location(request.getLocation())
+                .location(location)
                 .address(request.getAddress())
                 .active(Boolean.TRUE)
                 .owner(owner)

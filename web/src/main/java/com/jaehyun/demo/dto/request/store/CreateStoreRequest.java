@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.geom.Point;
 
 @Data
 @NoArgsConstructor
@@ -12,10 +11,11 @@ import org.locationtech.jts.geom.Point;
 @Builder
 public class CreateStoreRequest {
 
-    String name;
-    String description;
-    Point location;
-    String address;
-    Boolean active;
+    private String name;
+    private String description;
+    private Double latitude;
+    private Double longitude;
+    private String address;
+    private Boolean active;
 
 }

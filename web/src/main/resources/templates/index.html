@@ -44,6 +44,16 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
+    map.on('click', function(e){
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        console.log("클릭 좌표");
+        console.log("위도 좌표" + lat);
+        console.log("경고 좌표" + lng);
+
+    })
+
     L.marker([37.5665, 126.9780]).addTo(map)
         .bindPopup("<b>서울 시청</b>")
         .openPopup();
