@@ -1,4 +1,4 @@
-package com.jaehyun.demo.dto.response;
+package com.jaehyun.demo.dto.response.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TokenResponse {
+public class SignUpResponse {
 
-    private String accessToken;
-    private String refreshToken;
+    private String email;
+    private String name;
+
 }

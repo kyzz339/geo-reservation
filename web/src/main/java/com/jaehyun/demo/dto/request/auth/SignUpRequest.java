@@ -1,5 +1,6 @@
-package com.jaehyun.demo.dto.request;
+package com.jaehyun.demo.dto.request.auth;
 
+import com.jaehyun.demo.core.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SignInRequest {
+public class SignUpRequest {
 
     private String email;
     private String password;
-
+    private String name;
+    private Role type;
 }

@@ -1,10 +1,10 @@
 package com.jaehyun.demo.controller;
 
-import com.jaehyun.demo.dto.request.ReissueRequest;
-import com.jaehyun.demo.dto.request.SignInRequest;
-import com.jaehyun.demo.dto.request.SignUpRequest;
-import com.jaehyun.demo.dto.response.SignUpResponse;
-import com.jaehyun.demo.dto.response.TokenResponse;
+import com.jaehyun.demo.dto.request.auth.ReissueRequest;
+import com.jaehyun.demo.dto.request.auth.SignInRequest;
+import com.jaehyun.demo.dto.request.auth.SignUpRequest;
+import com.jaehyun.demo.dto.response.auth.SignUpResponse;
+import com.jaehyun.demo.dto.response.auth.TokenResponse;
 import com.jaehyun.demo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

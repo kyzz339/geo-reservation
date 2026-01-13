@@ -1,4 +1,4 @@
-package com.jaehyun.demo.dto.request;
+package com.jaehyun.demo.dto.response.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReissueRequest {
+public class TokenResponse {
 
+    private String accessToken;
     private String refreshToken;
-
 }

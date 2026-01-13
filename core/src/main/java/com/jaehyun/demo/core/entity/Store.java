@@ -2,6 +2,7 @@ package com.jaehyun.demo.core.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "stores")
 public class Store implements Serializable {
 
@@ -39,7 +41,7 @@ public class Store implements Serializable {
     private boolean active;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id" , nullable = false)
+    @JoinColumn(name = "owner_id" , nullable = true)
     private User owner;
 
 }
