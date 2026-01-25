@@ -30,33 +30,62 @@
 <div id="map"></div>
 
 <script src="/webjars/leaflet/1.9.4/dist/leaflet.js"></script>
+<script src="/webjars/turf__turf/6.5.0/turf.min.js"></script>
 <script>
+    // 1. 지도 초기화
     var map = L.map('map' , {
         zoomControl: false
     }).setView([37.5665, 126.9780], 12);
 
-    L.control.zoom({ //줌 표시
-        position: 'bottomright'
-    }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
+    // 2. 현재 위치 가져오기 로직
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            map.setView([lat, lng], 16);
+
+            // Turf.js 활용 공간 데이터 생성
+            const userPoint = turf.point([lng , lat]);
+            const radiusInKm = Math.max(accuracy, 100) / 10000;
+            const circleModel = turf.circle(userPoint, radiusInKm, { units: 'kilometers', steps: 64 });
+
+            // 오차 범위 표시
+            L.geoJSON(circleModel, {
+                style: {
+                    color: 'blue',
+                    fillColor: '#30f',
+                    fillOpacity: 0.2,
+                    weight: 1
+                }
+            }).addTo(map);
+
+            // 현재 위치 마커
+            L.marker([lat, lng]).addTo(map)
+                .openPopup();
+
+        }, function(error) {
+            console.error("위치 정보를 가져오는 데 실패했습니다: ", error.message);
+            // 권한 거부 시 기본 위치 유지 혹은 메시지 출력
+        }, {
+            enableHighAccuracy: true
+        });
+    }
+
     map.on('click', function(e){
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
 
-        console.log("클릭 좌표");
-        console.log("위도 좌표" + lat);
-        console.log("경고 좌표" + lng);
-
-    })
-
-    L.marker([37.5665, 126.9780]).addTo(map)
-        .bindPopup("<b>서울 시청</b>")
-        .openPopup();
+        console.log("클릭 좌표 - 위도: " + lat + ", 경도: " + lng);
+    });
 </script>
 
 <th:block th:replace="~{header/header :: header-js}"></th:block>

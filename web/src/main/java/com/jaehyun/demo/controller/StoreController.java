@@ -22,7 +22,7 @@ public class StoreController {
 
     private StoreService storeService;
 
-    @PostMapping("createStore")
+    @PostMapping("/createStore")
     @ResponseBody
     public ResponseEntity<CreateStoreResponse> createStore(@RequestBody CreateStoreRequest request,
                                                            @AuthenticationPrincipal UserDetails userDetails){

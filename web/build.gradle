@@ -17,6 +17,7 @@ java {
 repositories {
     mavenCentral()
     maven { url 'https://www.webjars.org' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -39,6 +40,13 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.webjars.npm:leaflet:1.9.4'
+
+    implementation ('org.webjars.npm:turf__turf:6.5.0') {
+        exclude group: 'org.webjars.npm', module: 'geojson-rbush'
+    }
+
+    implementation 'org.webjars.npm:rbush:3.0.1'
+    implementation 'org.webjars.npm:quickselect:2.0.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

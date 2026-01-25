@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Log4j2
 @RequiredArgsConstructor
 @Repository
@@ -15,6 +18,14 @@ public class StoreDao {
 
     public Store saveStore(Store store){
         return this.storeRepository.save(store);
+    }
+
+    public Optional<Store> getStore(Long id){
+        return this.storeRepository.findById(id);
+    }
+
+    public List<Store> listStore(){
+        return this.storeRepository.findByDeletedIsTrue();
     }
 
 }

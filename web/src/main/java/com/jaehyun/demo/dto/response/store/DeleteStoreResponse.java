@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateStoreResponse {
+public class DeleteStoreResponse {
 
     private Long id;
     private String name;

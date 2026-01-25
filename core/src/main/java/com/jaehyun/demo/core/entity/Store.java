@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Point;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
@@ -20,6 +21,7 @@ public class Store implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+    public Point getLocation;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +41,15 @@ public class Store implements Serializable {
 
     @Column
     private boolean active;
+
+    @Column
+    private OffsetDateTime createdAt;
+
+    @Column
+    private boolean deleted;
+
+    @Column
+    private OffsetDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id" , nullable = true)

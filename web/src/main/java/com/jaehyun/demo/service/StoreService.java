@@ -6,6 +6,8 @@ import com.jaehyun.demo.core.entity.Store;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
+import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
+import com.jaehyun.demo.dto.response.store.StoreResponse;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -13,6 +15,12 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +32,7 @@ public class StoreService {
     private final GeometryFactory geometryFactory;
 
     //매장 생성 -> owner
+    @Transactional
     public CreateStoreResponse createStore(CreateStoreRequest request , UserDetails userDetails){
 
         User owner = userDao.findByEmail(userDetails.getUsername())
@@ -37,6 +46,8 @@ public class StoreService {
                 .location(location)
                 .address(request.getAddress())
                 .active(Boolean.TRUE)
+                .createdAt(OffsetDateTime.now())
+                .deleted(Boolean.FALSE)
                 .owner(owner)
                 .build();
 
@@ -47,11 +58,37 @@ public class StoreService {
                 .name(savedStore.getName())
                 .build();
     }
-    //매장 삭제
+    //매장 삭제 - soft delete - 나중에 권한체크 추가 할 예정
+    @Transactional
+    public DeleteStoreResponse deleteStore(Long id){
 
+        Store savedStore = this.storeDao.getStore(id)
+                .orElseThrow(() -> new IllegalArgumentException("deleteStore : 가게가 존재하지 않습니다. id =" + id));
 
+        savedStore.setDeleted(true);
+        savedStore.setDeletedAt(OffsetDateTime.now());
+
+        return DeleteStoreResponse.builder()
+                .id(savedStore.getId())
+                .name(savedStore.getName())
+                .build();
+    }
     //매장 조회
+    public StoreResponse viewStore(Long id){
+
+        Store savedStore = this.storeDao.getStore(id)
+                .orElseThrow(() -> new IllegalArgumentException("viewStore :  가게가 존재하지 않습니다. id = "+ id));
+
+        return StoreResponse.from(savedStore);
+    }
 
     //매장 리스트(모든 매장 표시) -> 지도 표시
+    public List<StoreResponse> storeList(){
 
+        List<Store> stores = storeDao.listStore();
+
+        return stores.stream()
+                .map(StoreResponse::from)
+                .collect(Collectors.toList());
+    }
 }
