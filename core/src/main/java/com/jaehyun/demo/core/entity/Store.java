@@ -21,7 +21,6 @@ public class Store implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    public Point getLocation;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

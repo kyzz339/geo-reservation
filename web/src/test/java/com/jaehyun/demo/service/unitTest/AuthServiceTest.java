@@ -1,4 +1,4 @@
-package com.jaehyun.demo.service;
+package com.jaehyun.demo.service.unitTest;
 
 import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.User;
@@ -7,6 +7,7 @@ import com.jaehyun.demo.dto.request.auth.SignInRequest;
 import com.jaehyun.demo.dto.request.auth.SignUpRequest;
 import com.jaehyun.demo.dto.response.auth.TokenResponse;
 import com.jaehyun.demo.jwt.JwtTokenProvider;
+import com.jaehyun.demo.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

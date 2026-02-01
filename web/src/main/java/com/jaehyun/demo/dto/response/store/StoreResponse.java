@@ -24,8 +24,8 @@ public class StoreResponse {
                 .id(store.getId())
                 .name(store.getName())
                 .description(store.getDescription())
-                .latitude(store.getLocation.getY())
-                .longitude(store.getLocation.getX())
+                .latitude(store.getLocation().getY())
+                .longitude(store.getLocation().getX())
                 .address(store.getAddress())
                 .build();
     }

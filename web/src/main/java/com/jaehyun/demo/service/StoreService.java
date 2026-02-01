@@ -12,14 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,12 +57,16 @@ public class StoreService {
                 .name(savedStore.getName())
                 .build();
     }
-    //매장 삭제 - soft delete - 나중에 권한체크 추가 할 예정
+    //매장 삭제
     @Transactional
-    public DeleteStoreResponse deleteStore(Long id){
+    public DeleteStoreResponse deleteStore(Long id , UserDetails userdetail) throws AccessDeniedException {
 
         Store savedStore = this.storeDao.getStore(id)
                 .orElseThrow(() -> new IllegalArgumentException("deleteStore : 가게가 존재하지 않습니다. id =" + id));
+
+        if(!savedStore.getOwner().getEmail().equals(userdetail.getUsername())){
+            throw new AccessDeniedException("deleteStore : 삭제 권한이 없습니다. id :" + id);
+        }
 
         savedStore.setDeleted(true);
         savedStore.setDeletedAt(OffsetDateTime.now());
