@@ -44,6 +44,7 @@ public class StoreService {
                 .description(request.getDescription())
                 .location(location)
                 .address(request.getAddress())
+                .maxCapacity(request.getMaxCapacity())
                 .active(Boolean.TRUE)
                 .createdAt(OffsetDateTime.now())
                 .deleted(Boolean.FALSE)

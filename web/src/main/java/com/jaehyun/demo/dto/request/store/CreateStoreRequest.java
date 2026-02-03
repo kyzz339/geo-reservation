@@ -16,6 +16,7 @@ public class CreateStoreRequest {
     private Double latitude;
     private Double longitude;
     private String address;
+    private Integer maxCapacity;
     private Boolean active;
 
 }

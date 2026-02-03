@@ -78,6 +78,7 @@ public class StoreServiceTest_mockito {
                 .description("테스트 가게입니다.")
                 .longitude(17.00)
                 .latitude(18.00)
+                .maxCapacity(10)
                 .address("서울시 무슨구 무슨동 12-1")
                 .build();
 
@@ -109,6 +110,7 @@ public class StoreServiceTest_mockito {
                 .longitude(17.00)
                 .latitude(18.00)
                 .address("서울시 무슨구 무슨동 12-1")
+                .maxCapacity(10)
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class , () -> {

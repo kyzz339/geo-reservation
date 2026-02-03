@@ -38,6 +38,9 @@ public class Store implements Serializable {
     @Column
     private String address;
 
+    @Column(nullable = false)
+    private Integer maxCapacity;
+
     @Column
     private boolean active;
 
