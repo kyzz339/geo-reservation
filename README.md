@@ -2,7 +2,7 @@
 Spring Boot를 활용한 지도 기반 매장 예약 시스템입니다. 대규모 트래픽 상황에서의 데이터 정합성과 확장성을 고려하여 설계되었습니다.
 
 🚀 핵심 기술 스택
-Backend: Java 21, Spring Boot 3.x
+Backend: Java 21, Spring Boot 3.5.7
 
 Database: PostgreSQL, PostGIS (위치 정보 처리)
 
