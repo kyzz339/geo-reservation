@@ -1,6 +1,7 @@
 package com.jaehyun.demo.core.dao;
 
 import com.jaehyun.demo.core.entity.Store;
+import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +23,10 @@ public class StoreDao {
 
     public Optional<Store> getStore(Long id){
         return this.storeRepository.findById(id);
+    }
+
+    public List<Store> viewMyStore(User owner){
+        return this.storeRepository.findByOwner(owner);
     }
 
     public List<Store> listStore(){

@@ -49,4 +49,10 @@ public class Reservation implements Serializable {
     @Column(nullable = false)
     private ReservationStatus status;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private  LocalDateTime updatedAt;
+
 }

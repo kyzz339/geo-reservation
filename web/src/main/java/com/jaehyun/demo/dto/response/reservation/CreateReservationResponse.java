@@ -1,0 +1,31 @@
+package com.jaehyun.demo.dto.response.reservation;
+
+import com.jaehyun.demo.core.entity.Reservation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateReservationResponse {
+
+    private String storeName;
+    private String reserveName;
+    private LocalDateTime reservedAt;
+    private LocalDateTime finishedAt;
+
+    public static CreateReservationResponse from(Reservation reservation){
+        return CreateReservationResponse.builder()
+                .storeName(reservation.getStore().getName())
+                .reserveName(reservation.getUser().getName())
+                .reservedAt(reservation.getReservedAt())
+                .finishedAt(reservation.getFinishedAt())
+                .build();
+    }
+
+}

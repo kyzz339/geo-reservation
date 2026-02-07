@@ -12,11 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +48,7 @@ public class StoreService {
                 .address(request.getAddress())
                 .maxCapacity(request.getMaxCapacity())
                 .active(Boolean.TRUE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .deleted(Boolean.FALSE)
                 .owner(owner)
                 .build();
@@ -70,7 +72,7 @@ public class StoreService {
         }
 
         savedStore.setDeleted(true);
-        savedStore.setDeletedAt(OffsetDateTime.now());
+        savedStore.setDeletedAt(LocalDateTime.now());
 
         return DeleteStoreResponse.builder()
                 .id(savedStore.getId())
@@ -84,6 +86,18 @@ public class StoreService {
                 .orElseThrow(() -> new IllegalArgumentException("viewStore :  가게가 존재하지 않습니다. id = "+ id));
 
         return StoreResponse.from(savedStore);
+    }
+
+    //사장본인 매장 조회
+    public List<StoreResponse> viewMyStore(UserDetails userDetails){
+
+        User owner = userDao.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        return this.storeDao.viewMyStore(owner)
+                .stream()
+                .map(StoreResponse::from)
+                .toList();
     }
 
     //매장 리스트(모든 매장 표시) -> 지도 표시

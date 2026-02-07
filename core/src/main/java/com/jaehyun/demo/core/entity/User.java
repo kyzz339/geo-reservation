@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -35,6 +36,12 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role type;
+
+    @Column
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private  LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private List<Reservation> reservations;

@@ -5,12 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReservationRequest {
+public class CreateReservationRequest {
 
-    private Long storeId;
-
+    Long storeId;
+    Integer visitorCount;
+    LocalDateTime reservedAt;
+    LocalDateTime finishedAt;
 }

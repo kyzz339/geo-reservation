@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.Point;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -45,13 +45,16 @@ public class Store implements Serializable {
     private boolean active;
 
     @Column
-    private OffsetDateTime createdAt;
-
-    @Column
     private boolean deleted;
 
     @Column
-    private OffsetDateTime deletedAt;
+    private LocalDateTime deletedAt;
+
+    @Column
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private  LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id" , nullable = true)

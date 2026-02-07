@@ -32,4 +32,19 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom {
                 .fetchOne();
     }
 
+    @Override
+    public Integer getSumVisitorCountExcludeMine(Long storeId , LocalDateTime start , LocalDateTime end , String email){
+        return queryFactory
+                .select(reservation.visitorCount.sum().coalesce(0))
+                .from(reservation)
+                .where(
+                        reservation.store.id.eq(storeId),
+                        reservation.status.in(ReservationStatus.PENDING, ReservationStatus.RESERVED),
+                        reservation.reservedAt.before(end),
+                        reservation.finishedAt.after(start),
+                        reservation.user.email.notIn(email)
+                )
+                .fetchOne();
+    }
+
 }
