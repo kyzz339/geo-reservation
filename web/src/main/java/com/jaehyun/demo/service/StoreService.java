@@ -1,5 +1,7 @@
 package com.jaehyun.demo.service;
 
+import com.jaehyun.demo.common.exception.CustomException;
+import com.jaehyun.demo.common.exception.ErrorCode;
 import com.jaehyun.demo.core.dao.StoreDao;
 import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.Store;
@@ -12,14 +14,12 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,7 @@ public class StoreService {
     public CreateStoreResponse createStore(CreateStoreRequest request , UserDetails userDetails){
 
         User owner = userDao.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND , "ID : " + userDetails.getUsername()));
 
         Point location = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
 
@@ -65,10 +65,10 @@ public class StoreService {
     public DeleteStoreResponse deleteStore(Long id , UserDetails userdetail) throws AccessDeniedException {
 
         Store savedStore = this.storeDao.getStore(id)
-                .orElseThrow(() -> new IllegalArgumentException("deleteStore : 가게가 존재하지 않습니다. id =" + id));
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND , "StoreId : " + id));
 
         if(!savedStore.getOwner().getEmail().equals(userdetail.getUsername())){
-            throw new AccessDeniedException("deleteStore : 삭제 권한이 없습니다. id :" + id);
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS , "ID : " + userdetail.getUsername());
         }
 
         savedStore.setDeleted(true);
@@ -83,7 +83,7 @@ public class StoreService {
     public StoreResponse viewStore(Long id){
 
         Store savedStore = this.storeDao.getStore(id)
-                .orElseThrow(() -> new IllegalArgumentException("viewStore :  가게가 존재하지 않습니다. id = "+ id));
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND , "StoreId : " + id));
 
         return StoreResponse.from(savedStore);
     }
@@ -92,7 +92,7 @@ public class StoreService {
     public List<StoreResponse> viewMyStore(UserDetails userDetails){
 
         User owner = userDao.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND , "ID : " + userDetails.getUsername()));
 
         return this.storeDao.viewMyStore(owner)
                 .stream()

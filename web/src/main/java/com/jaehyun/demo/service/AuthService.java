@@ -1,5 +1,7 @@
 package com.jaehyun.demo.service;
 
+import com.jaehyun.demo.common.exception.CustomException;
+import com.jaehyun.demo.common.exception.ErrorCode;
 import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.enums.Role;
@@ -27,7 +29,7 @@ public class AuthService {
     public SignUpResponse signUp(SignUpRequest request) {
 
         if(userDao.existsByEmail(request.getEmail())){
-            throw new IllegalArgumentException("이미 가입된 이메일 입니다.");
+            throw new CustomException(ErrorCode.ALREADY_EXIST_USER , "email : " + request.getEmail());
         }
 
         User savedUser = User.builder()
@@ -45,10 +47,10 @@ public class AuthService {
     public TokenResponse signIn(SignInRequest signInRequest) {
 
         User user = userDao.findByEmail(signInRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일 입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND , "email : " + signInRequest.getEmail()));
 
         if(!passwordEncoder.matches(signInRequest.getPassword(), user.getPassword())){
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
         String accessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), user.getType());
@@ -70,7 +72,7 @@ public class AuthService {
     public TokenResponse reissue(String refreshToken){
 
         if(!jwtTokenProvider.validateToken(refreshToken)){
-            throw new RuntimeException("Refresh Token이 유효하지 않습니다.");
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
         String email = jwtTokenProvider.getEmailFromToken(refreshToken);
@@ -78,11 +80,11 @@ public class AuthService {
         String savedRefreshToken = redisTemplate.opsForValue().get("RT:" + email);
 
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new RuntimeException("로그인 정보가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.TOKEN_MISMATCH);
         }
 
         User user = userDao.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND , "email : " + email));
 
         String newAccessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), user.getType());
 
@@ -95,7 +97,7 @@ public class AuthService {
     public String findByEmail(String email){
 
         User user = userDao.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일 입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND , "email : " + email));
 
         return user.getName();
     }

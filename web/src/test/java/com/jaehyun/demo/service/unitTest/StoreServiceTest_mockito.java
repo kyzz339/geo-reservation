@@ -1,5 +1,6 @@
 package com.jaehyun.demo.service.unitTest;
 
+import com.jaehyun.demo.common.exception.CustomException;
 import com.jaehyun.demo.core.dao.StoreDao;
 import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.Store;
@@ -19,10 +20,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.nio.file.AccessDeniedException;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -113,11 +115,11 @@ public class StoreServiceTest_mockito {
                 .maxCapacity(10)
                 .build();
 
-        RuntimeException exception = assertThrows(RuntimeException.class , () -> {
+        CustomException exception = assertThrows(CustomException.class , () -> {
             storeService.createStore(request , userDetails);
         });
 
-        assertEquals("사용자를 찾을 수 없습니다." , exception.getMessage());
+        assertTrue(exception.getMessage().contains("사용자를 찾을 수 없습니다."));
         verify(storeDao,never()).saveStore(any(Store.class));
 
     }
@@ -144,7 +146,7 @@ public class StoreServiceTest_mockito {
                 .address("삭제 예정 가게 주소")
                 .active(Boolean.TRUE)
                 .deleted(Boolean.FALSE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .owner(existUser)
                 .build();
 
@@ -183,17 +185,17 @@ public class StoreServiceTest_mockito {
                 .address("삭제 예정 가게 주소")
                 .active(Boolean.TRUE)
                 .deleted(Boolean.FALSE)
-                .createdAt(OffsetDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .owner(existUser)
                 .build();
 
         when(storeDao.getStore(existStore.getId())).thenReturn(Optional.of(existStore));
 
-        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->{
+        CustomException exception = assertThrows(CustomException.class, () ->{
             storeService.deleteStore(10L , userDetail);
         });
 
-        assertEquals("deleteStore : 삭제 권한이 없습니다. id :" + 10L , exception.getMessage());
+        assertTrue(exception.getMessage().contains("접근 권한이 없습니다."));
         assertFalse(existStore.isDeleted());
         verify(storeDao).getStore(existStore.getId());
     }
@@ -207,11 +209,11 @@ public class StoreServiceTest_mockito {
 
         when(storeDao.getStore(wrongId)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        CustomException exception = assertThrows(CustomException.class, () -> {
            storeService.deleteStore(wrongId , userDetail);
         });
 
-        assertEquals("deleteStore : 가게가 존재하지 않습니다. id =" + wrongId , exception.getMessage());
+        assertTrue(exception.getMessage().contains("매장이 존재하지 않습니다."));
 
         verify(userDetail , never()).getUsername();
     }

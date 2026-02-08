@@ -26,7 +26,7 @@ public class ReservationDao {
     }
 
     public Integer getSumVisitorCountExcludeMine(Long storeId , LocalDateTime start , LocalDateTime end , String email){
-        return this.reservationRepository.getSumVisitorCountWithLock(storeId , start , end , email);
+        return this.reservationRepository.getSumVisitorCountExcludeMine(storeId , start , end , email);
     }
 
     public List<Reservation> viewReservations(Long storeId){
