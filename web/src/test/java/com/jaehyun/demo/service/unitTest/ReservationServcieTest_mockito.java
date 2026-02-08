@@ -49,8 +49,7 @@ public class ReservationServcieTest_mockito {
     @InjectMocks
     private ReservationService reservationService;
 
-    @Spy
-    private GeometryFactory geomereyFactory = new GeometryFactory(new PrecisionModel() , 4326);
+    private final GeometryFactory geomereyFactory = new GeometryFactory(new PrecisionModel() , 4326);
 
     @Test
     @DisplayName("정상 예약 생성")
@@ -161,4 +160,9 @@ public class ReservationServcieTest_mockito {
         assertTrue(exception.getMessage().contains("잔여 좌석이 부족합니다."));
         assertEquals(exception.getErrorCode() , ErrorCode.CAPACITY_EXCEEDED);
     }
+
+    //본인 가게 리스트 확인
+    //손님 예약 확인 list
+    //예약 취소
+    //예약 변경
 }
