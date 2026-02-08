@@ -50,7 +50,6 @@ public class StoreServiceTest_mockito {
 
     @InjectMocks
     private StoreService storeService;
-
     @Test
     @DisplayName("정상 가게 생성 테스트")
     void createStoreTest(){
