@@ -17,6 +17,7 @@ import com.jaehyun.demo.dto.response.reservation.ReservationResponse;
 import com.jaehyun.demo.dto.response.reservation.UpdateReservationResponse;
 import com.jaehyun.demo.service.ReservationService;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,6 +108,9 @@ public class ReservationServcieTest_mockito {
 
         verify(reservationDao , times(1)).getSumVisitorCountWithLock(existStore.getId(), start , end);
         verify(reservationDao , times(1)).saveReservation(captor.capture());
+
+        //비관적 락 확인
+        verify(em, times(1)).lock(existStore, LockModeType.PESSIMISTIC_WRITE);
 
         Reservation captureValue = captor.getValue();
 
