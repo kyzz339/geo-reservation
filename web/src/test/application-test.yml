@@ -1,14 +1,11 @@
 spring:
-  profiles:
-    active: test
   datasource:
-    # PostgreSQL 모드로 동작하도록 설정
+    # DB_CLOSE_DELAY=-1: 테스트 도중 커넥션이 끊겨도 메모리 DB 데이터가 유지됨
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
-    # PostgreSQL의 공간 데이터 방언으로 설정
     database-platform: org.hibernate.spatial.dialect.postgis.PostgisPGDialect
     hibernate:
       ddl-auto: create-drop
@@ -16,5 +13,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        # H2에서 PostgreSQL의 형변환 등을 인식하게 함
+        # PostgreSQL 문법 호환성을 높여줌
         temp.use_jdbc_metadata_defaults: false
