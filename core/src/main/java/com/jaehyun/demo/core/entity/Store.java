@@ -50,10 +50,10 @@ public class Store implements Serializable {
     @Column
     private LocalDateTime deletedAt;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private  LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -37,6 +38,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .type(request.getType() != null ? request.getType() : Role.USER)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userDao.save(savedUser);

@@ -54,10 +54,16 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.redisson:redisson-spring-boot-starter:3.24.3'
     testImplementation 'org.locationtech.jts:jts-core'
     testImplementation 'com.h2database:h2:2.2.224'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    //테스트 시 Docker 컨테이너(Redis 등)를 자동으로 관리
+    testImplementation 'org.testcontainers:testcontainers:1.19.0'
+    //Unit 5와 연동하여 컨테이너의 생명주기(시작/종료)를 관리
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'

@@ -37,10 +37,10 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Role type;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private  LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
