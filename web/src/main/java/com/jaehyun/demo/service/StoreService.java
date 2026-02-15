@@ -48,7 +48,6 @@ public class StoreService {
                 .address(request.getAddress())
                 .maxCapacity(request.getMaxCapacity())
                 .active(Boolean.TRUE)
-                .createdAt(LocalDateTime.now())
                 .deleted(Boolean.FALSE)
                 .owner(owner)
                 .build();

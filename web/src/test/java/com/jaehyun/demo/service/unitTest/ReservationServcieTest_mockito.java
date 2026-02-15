@@ -143,7 +143,6 @@ public class ReservationServcieTest_mockito {
                 .address("주소")
                 .maxCapacity(10)
                 .active(true)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         LocalDateTime start = LocalDateTime.now();
@@ -194,7 +193,6 @@ public class ReservationServcieTest_mockito {
                 .address("주소")
                 .maxCapacity(10)
                 .active(true)
-                .createdAt(LocalDateTime.now())
                 .owner(user)
                 .build();
 
@@ -207,8 +205,6 @@ public class ReservationServcieTest_mockito {
                         .reservedAt(LocalDateTime.now())
                         .finishedAt(LocalDateTime.now().plusHours(1))
                         .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
                         .build(),
 
                 Reservation.builder()
@@ -219,8 +215,6 @@ public class ReservationServcieTest_mockito {
                         .reservedAt(LocalDateTime.now().plusDays(1))
                         .finishedAt(LocalDateTime.now().plusDays(1).plusHours(1))
                         .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
                         .build()
         );
 
@@ -265,7 +259,6 @@ public class ReservationServcieTest_mockito {
                 .address("주소")
                 .maxCapacity(10)
                 .active(true)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         List<Reservation> reservations = Arrays.asList(
@@ -277,8 +270,6 @@ public class ReservationServcieTest_mockito {
                         .reservedAt(LocalDateTime.now())
                         .finishedAt(LocalDateTime.now().plusHours(1))
                         .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
                         .build(),
 
                 Reservation.builder()
@@ -289,8 +280,6 @@ public class ReservationServcieTest_mockito {
                         .reservedAt(LocalDateTime.now().plusDays(1))
                         .finishedAt(LocalDateTime.now().plusDays(1).plusHours(1))
                         .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
                         .build()
         );
 
@@ -328,7 +317,6 @@ public class ReservationServcieTest_mockito {
                 .address("주소")
                 .maxCapacity(10)
                 .active(true)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Reservation exsistReservation =  Reservation.builder()
@@ -339,8 +327,6 @@ public class ReservationServcieTest_mockito {
                 .reservedAt(LocalDateTime.now())
                 .finishedAt(LocalDateTime.now().plusHours(1))
                 .status(ReservationStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         when(reservationDao.viewReservation(1L)).thenReturn(Optional.of(exsistReservation));
@@ -380,7 +366,6 @@ public class ReservationServcieTest_mockito {
                 .address("주소")
                 .maxCapacity(10)
                 .active(true)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Reservation exsistReservation =  Reservation.builder()
@@ -391,8 +376,6 @@ public class ReservationServcieTest_mockito {
                 .reservedAt(LocalDateTime.now())
                 .finishedAt(LocalDateTime.now().plusHours(1))
                 .status(ReservationStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         UserDetails userDetails = mock(UserDetails.class);

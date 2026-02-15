@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -13,11 +16,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Table(name = "stores")
-public class Store implements Serializable {
+public class Store{
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -50,9 +54,11 @@ public class Store implements Serializable {
     @Column
     private LocalDateTime deletedAt;
 
+    @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = true)
     private  LocalDateTime updatedAt;
 

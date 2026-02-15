@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -13,11 +16,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Table(name = "reservations")
-public class Reservation implements Serializable {
+public class Reservation{
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -49,9 +53,11 @@ public class Reservation implements Serializable {
     @Column(nullable = false)
     private ReservationStatus status;
 
+    @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private  LocalDateTime updatedAt;
 

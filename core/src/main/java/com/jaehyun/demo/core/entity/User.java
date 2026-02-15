@@ -3,6 +3,9 @@ package com.jaehyun.demo.core.entity;
 import com.jaehyun.demo.core.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -11,11 +14,12 @@ import java.util.List;
 
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
-public class User implements Serializable {
+public class User{
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -37,9 +41,11 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Role type;
 
+    @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = true)
     private  LocalDateTime updatedAt;
 

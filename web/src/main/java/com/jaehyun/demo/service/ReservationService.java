@@ -109,7 +109,6 @@ public class ReservationService {
         }
 
         savedReservation.setStatus(ReservationStatus.CANCELED);
-        savedReservation.setUpdatedAt(LocalDateTime.now());
 
         return UpdateReservationResponse.from(savedReservation);
     }
