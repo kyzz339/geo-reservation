@@ -61,7 +61,7 @@ public class StoreService {
     }
     //매장 삭제
     @Transactional
-    public DeleteStoreResponse deleteStore(Long id , UserDetails userdetail) throws AccessDeniedException {
+    public DeleteStoreResponse deleteStore(Long id , UserDetails userdetail) {
 
         Store savedStore = this.storeDao.getStore(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND , "StoreId : " + id));
@@ -99,7 +99,7 @@ public class StoreService {
                 .toList();
     }
 
-    //매장 리스트(모든 매장 표시) -> 지도 표시
+    //지도상 매장 리스트(모든 매장 표시) -> 지도 표시
     public List<StoreResponse> storeList(){
 
         List<Store> stores = storeDao.listStore();
