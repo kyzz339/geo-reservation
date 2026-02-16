@@ -7,6 +7,7 @@ import com.jaehyun.demo.core.dao.UserDao;
 import com.jaehyun.demo.core.entity.Store;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
+import com.jaehyun.demo.dto.request.store.LocationRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
 import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
 import com.jaehyun.demo.dto.response.store.StoreResponse;
@@ -18,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,9 +100,13 @@ public class StoreService {
     }
 
     //지도상 매장 리스트(모든 매장 표시) -> 지도 표시
-    public List<StoreResponse> storeList(){
+    public List<StoreResponse> storeList(LocationRequest request){
 
-        List<Store> stores = storeDao.listStore();
+        Point myLocation = geometryFactory.createPoint(new Coordinate(request.getLongitude() , request.getLatitude()));
+
+        Double radius = (request.getDistance() != null) ? request.getDistance() : 1000.0;
+
+        List<Store> stores = storeDao.listStoreNearBy(myLocation , radius);
 
         return stores.stream()
                 .map(StoreResponse::from)

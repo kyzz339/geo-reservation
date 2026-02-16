@@ -56,7 +56,8 @@ dependencies {
     testRuntimeOnly 'com.h2database:h2'
     testImplementation 'org.redisson:redisson-spring-boot-starter:3.24.3'
     testImplementation 'org.locationtech.jts:jts-core'
-    testImplementation 'com.h2database:h2:2.2.224'
+    //testImplementation 'com.h2database:h2:2.2.224'
+    testImplementation "org.testcontainers:postgresql:1.19.0"
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.springframework.security:spring-security-test'
 

@@ -5,6 +5,7 @@ import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,6 +32,10 @@ public class StoreDao {
 
     public List<Store> listStore(){
         return this.storeRepository.findByDeletedIsTrue();
+    }
+
+    public List<Store> listStoreNearBy(Point myLocation , Double distance){
+        return this.storeRepository.listStoreNearBy(myLocation , distance);
     }
 
 }

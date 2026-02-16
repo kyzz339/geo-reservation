@@ -8,11 +8,13 @@ import com.jaehyun.demo.core.entity.Store;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.core.enums.Role;
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
+import com.jaehyun.demo.dto.request.store.LocationRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
 import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
 import com.jaehyun.demo.dto.response.store.StoreResponse;
 import com.jaehyun.demo.service.StoreService;
 import com.jaehyun.demo.service.integrationTest.support.IntegrationTestSupport;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -20,6 +22,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +49,9 @@ public class StoreServiceTest_integrationTest extends IntegrationTestSupport {
 
     @Autowired
     private GeometryFactory geometryFactory;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     @DisplayName("매장 생성 통합 테스트")
@@ -326,7 +332,83 @@ public class StoreServiceTest_integrationTest extends IntegrationTestSupport {
     }
 
     //매장리스트 실패 - 권한 실패
+    @Test
+    @DisplayName("매장 리스트(사장님) - 실패")
+    void storeList_fail() {
+        String email = "test@test.com";
+
+        User owner = User.builder()
+                .email(email)
+                .name("사장님")
+                .password("password")
+                .type(Role.OWNER)
+                .build();
+
+        userDao.save(owner);
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username("1"+email)
+                .password("password")
+                .authorities("ROLE_OWNER")
+                .build();
+
+        CustomException exception = assertThrows(CustomException.class , () -> {
+           storeService.viewMyStore(userDetails);
+        });
+
+        assertThat(exception.getMessage()).contains("사용자를 찾을 수 없습니다.");
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+    }
 
     //지도상 매장 표시
+    @Test
+    @DisplayName("지도상 매장 리스트 표시")
+    void storeListTest(){
+        List<Store> storeList = Arrays.asList(
+                Store.builder()
+                        .name("테스트 가게1")
+                        .location(geometryFactory.createPoint(new Coordinate(127.0, 37.0)))
+                        .address("서울시")
+                        .maxCapacity(20)
+                        .deleted(false)
+                        .build(),
+                Store.builder()
+                        .name("테스트 가게2")
+                        .location(geometryFactory.createPoint(new Coordinate(128.0, 38.0)))
+                        .address("서울시2층")
+                        .maxCapacity(25)
+                        .deleted(false)
+                        .build(),
+                Store.builder()
+                        .name("테스트 가게3")
+                        .location(geometryFactory.createPoint(new Coordinate(128.0, 38.0)))
+                        .address("서울시2층")
+                        .maxCapacity(25)
+                        .deleted(false)
+                        .build(),
+                Store.builder()
+                        .name("테스트 가게4")
+                        .location(geometryFactory.createPoint(new Coordinate(128.0, 38.0)))
+                        .address("서울시3층")
+                        .maxCapacity(25)
+                        .deleted(false)
+                        .build()
+        );
+
+        for(Store store : storeList){
+            storeDao.saveStore(store);
+        }
+
+        LocationRequest request = LocationRequest.builder()
+                .longitude(128.0)
+                .latitude(38.0)
+                .distance(1000.0)
+                .build();
+
+        List<StoreResponse> responses = storeService.storeList(request);
+
+        assertThat(responses).isNotNull();
+        assertThat(responses.size()).isEqualTo(storeList.size() - 1);
+    }
 
 }
