@@ -14,15 +14,12 @@ import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
 import com.jaehyun.demo.dto.response.store.StoreResponse;
 import com.jaehyun.demo.service.StoreService;
 import com.jaehyun.demo.service.integrationTest.support.IntegrationTestSupport;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +46,6 @@ public class StoreServiceTest_integrationTest extends IntegrationTestSupport {
 
     @Autowired
     private GeometryFactory geometryFactory;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Test
     @DisplayName("매장 생성 통합 테스트")

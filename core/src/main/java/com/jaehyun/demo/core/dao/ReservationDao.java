@@ -21,6 +21,10 @@ public class ReservationDao {
         return this.reservationRepository.save(reservation);
     }
 
+    public List<Reservation> saveReservations(List<Reservation> reservations){
+        return this.reservationRepository.saveAll(reservations);
+    }
+
     public Integer getSumVisitorCountWithLock(Long storeId , LocalDateTime start , LocalDateTime end){
         return this.reservationRepository.getSumVisitorCountWithLock(storeId , start , end);
     }

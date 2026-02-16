@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CreateReservationResponse {
 
+    private Long reservationId;
     private String storeName;
     private String reserveName;
     private LocalDateTime reservedAt;
@@ -21,6 +22,7 @@ public class CreateReservationResponse {
 
     public static CreateReservationResponse from(Reservation reservation){
         return CreateReservationResponse.builder()
+                .reservationId(reservation.getId())
                 .storeName(reservation.getStore().getName())
                 .reserveName(reservation.getUser().getName())
                 .reservedAt(reservation.getReservedAt())
