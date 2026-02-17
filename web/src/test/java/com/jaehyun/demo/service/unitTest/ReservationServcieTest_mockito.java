@@ -332,16 +332,14 @@ public class ReservationServcieTest_mockito {
         when(reservationDao.viewReservation(1L)).thenReturn(Optional.of(exsistReservation));
         when(userDetails.getUsername()).thenReturn(email);
 
-        UpdateReservationRequest request = UpdateReservationRequest.builder()
-                .id(1L)
-                .build();
+        Long reservationId = 1L;
 
 
-        UpdateReservationResponse response = reservationService.cancelReservation(request , userDetails);
+        UpdateReservationResponse response = reservationService.cancelReservation(reservationId , userDetails);
 
         verify(reservationDao , times(1)).viewReservation(1L);
 
-        assertEquals(response.getId() , request.getId());
+        assertEquals(response.getId() , reservationId);
         assertEquals(response.getStatus() , ReservationStatus.CANCELED);
     }
     //예약 변경

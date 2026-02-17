@@ -99,10 +99,10 @@ public class ReservationService {
     }
     //예약 취소 delete -> softdelete -> status : CANCELED 로 수정
     @Transactional
-    public UpdateReservationResponse cancelReservation(UpdateReservationRequest request , UserDetails userDetails){
+    public UpdateReservationResponse cancelReservation(Long reservationId , UserDetails userDetails){
 
-        Reservation savedReservation = this.reservationDao.viewReservation(request.getId())
-                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND ,"reservationId :" + request.getId()));
+        Reservation savedReservation = this.reservationDao.viewReservation(reservationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND ,"reservationId :" + reservationId));
 
         if(!userDetails.getUsername().equals(savedReservation.getUser().getEmail())){
             throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS , "ID : " + userDetails.getUsername());

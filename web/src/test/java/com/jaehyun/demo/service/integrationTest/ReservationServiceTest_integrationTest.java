@@ -266,14 +266,12 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
         Store store = createTestStore("취소매장", createTestOwner("owner2@test.com"));
         Reservation reservation = reservationDao.saveReservation(createReservation(user, store, ReservationStatus.PENDING));
 
-        UpdateReservationRequest request = UpdateReservationRequest.builder()
-                .id(reservation.getId())
-                .build();
+        Long reservationId = reservation.getId();
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
                 .password("password").authorities("ROLE_USER").build();
 
-        reservationService.cancelReservation(request, userDetails);
+        reservationService.cancelReservation(reservationId, userDetails);
 
         Reservation result = reservationDao.viewReservation(reservation.getId()).get();
         assertThat(result.getStatus()).isEqualTo(ReservationStatus.CANCELED);
