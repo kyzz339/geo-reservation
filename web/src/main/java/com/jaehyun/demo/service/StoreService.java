@@ -103,11 +103,9 @@ public class StoreService {
     public List<StoreResponse> storeList(LocationRequest request){
 
         Point myLocation = geometryFactory.createPoint(new Coordinate(request.getLongitude() , request.getLatitude()));
-
-        Double radius = (request.getDistance() != null) ? request.getDistance() : 1000.0;
+        Double radius = (request.getRadius() != null) ? request.getRadius() : 1000.0;
 
         List<Store> stores = storeDao.listStoreNearBy(myLocation , radius);
-
         return stores.stream()
                 .map(StoreResponse::from)
                 .collect(Collectors.toList());

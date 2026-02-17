@@ -13,6 +13,6 @@ public class LocationRequest {
 
     private Double longitude;
     private Double latitude;
-    private Double distance;
+    private Double radius;
 
 }

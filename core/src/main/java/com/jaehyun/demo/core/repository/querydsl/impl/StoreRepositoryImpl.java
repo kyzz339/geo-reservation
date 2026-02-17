@@ -29,7 +29,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                                 "ST_DistanceSphere({0}, {1}) <= {2}",
                                 QStore.store.location,
                                 location,
-                                distance
+                                radius
                 ),
                         store.deleted.isFalse()
                 )

@@ -396,7 +396,7 @@ public class StoreServiceTest_integrationTest extends IntegrationTestSupport {
         LocationRequest request = LocationRequest.builder()
                 .longitude(128.0)
                 .latitude(38.0)
-                .distance(1000.0)
+                .radius(1000.0)
                 .build();
 
         List<StoreResponse> responses = storeService.storeList(request);

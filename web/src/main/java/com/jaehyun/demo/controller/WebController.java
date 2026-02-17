@@ -11,4 +11,14 @@ public class WebController {
         return "index";
     }
 
+    @GetMapping("/myStore")
+    public String viewMyStore() {
+        return "store/viewMyStore";
+    }
+
+    @GetMapping("/createStore")
+    public String createStore() {
+        return "store/createStore";
+    }
+
 }

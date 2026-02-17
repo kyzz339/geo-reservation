@@ -45,8 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }else{
                 log.warn("토큰 유효x");
             }
-        }else{
-            log.warn("Authorization 헤더 없음 / Bearer로 시작 안함");
         }
 
 

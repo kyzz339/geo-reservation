@@ -25,6 +25,10 @@
             transition: 0.3s;
         }
         .nav-menu a.signup-btn { background-color: #007bff; color: white; }
+
+        /* 매장 생성 버튼 스타일 추가 (초록색) */
+        .nav-menu a.create-store-btn { background-color: #28a745; color: white; }
+        .nav-menu a.create-store-btn:hover { background-color: #218838; }
     </style>
 </th:block>
 
@@ -37,6 +41,10 @@
         </div>
         <div id="auth-user" style="display: none;">
             <span id="user-name-display" style="font-size: 0.9rem; color: #333; font-weight: bold;"></span>님
+
+            <!-- 매장 생성 버튼 (기본적으로 숨김, JS로 제어) -->
+            <a href="/myStore" id="create-store-btn" class="create-store-btn" style="display: none;">매장</a>
+
             <a href="#" onclick="logout()" class="signup-btn">로그아웃</a>
         </div>
     </nav>
@@ -49,6 +57,7 @@
             const guestMenu = document.getElementById('auth-guest');
             const userMenu = document.getElementById('auth-user');
             const nameDisplay = document.getElementById('user-name-display');
+            const createStoreBtn = document.getElementById('create-store-btn');
 
             if (token) {
                 try {
@@ -56,7 +65,20 @@
                     const response = await fetchWithAuth('/auth/me');
                     if (response.ok) {
                         const data = await response.json();
+
+                        // 디버깅을 위해 콘솔에 데이터 출력 (개발 단계에서 확인용)
+                        console.log("User Info:", data);
+
                         nameDisplay.innerText = data.name;
+
+                        // 권한 체크 로직
+                        // 백엔드 응답의 필드명(role, type 등)과 값(OWNER, ROLE_OWNER)을 확인하여 조건 수정 필요
+                        const userRoles = data.roles || [];
+
+                        if (userRoles.includes('ROLE_OWNER')) {
+                            createStoreBtn.style.display = 'inline-block';
+                        }
+
                         guestMenu.style.display = 'none';
                         userMenu.style.display = 'block';
                     }

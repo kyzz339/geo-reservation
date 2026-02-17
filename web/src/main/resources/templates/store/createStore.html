@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>새 매장 등록</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="/webjars/leaflet/1.9.4/dist/leaflet.css"/>
+    <th:block th:replace="~{header/header :: header-css}"></th:block>
+    <style>
+        body { padding-top: 90px; background-color: #f8f9fa; font-family: 'Pretendard', sans-serif; }
+
+        /* 메인 컨테이너: 좌우 배치를 위한 Flex 설정 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            align-items: flex-start; /* 상단 기준 정렬 */
+        }
+
+        /* 왼쪽: 상세 정보 입력 섹션 */
+        .form-section {
+            flex: 1;
+            height: 600px; /* 지도의 높이와 통일 */
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        /* 오른쪽: 지도 섹션 */
+        .map-section {
+            flex: 1;
+            height: 600px; /* 폼의 높이와 통일 */
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        #map { width: 100%; height: 100%; }
+
+        h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: #333; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 0.95rem; }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
+
+        .btn-submit {
+            margin-top: auto; /* 폼의 맨 아래에 버튼 고정 */
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background-color: #218838; }
+
+        .hint { font-size: 0.8rem; color: #6c757d; margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{header/header :: main-header}"></div>
+
+<div class="container">
+    <div class="form-section">
+        <h2>매장 정보 입력</h2>
+        <form id="store-form">
+            <div class="form-group">
+                <label>매장명</label>
+                <input type="text" id="name" name="name" placeholder="예: 맛있는 카페" required>
+            </div>
+            <div class="form-group">
+                <label>매장 설명</label>
+                <textarea id="description" name="description" rows="3" placeholder="매장을 소개해 주세요"></textarea>
+            </div>
+            <div class="form-group">
+                <label>최대 수용 인원</label>
+                <input type="number" id="maxCapacity" name="maxCapacity" value="10" required>
+            </div>
+            <div class="form-group">
+                <label>위경도 정보</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="latitude" name="latitude" placeholder="위도" readonly>
+                    <input type="text" id="longitude" name="longitude" placeholder="경도" readonly>
+                </div>
+                <p class="hint">지도를 클릭하면 좌표가 자동으로 입력됩니다.</p>
+            </div>
+            <div class="form-group">
+                <label>상세 주소</label>
+                <input type="text" id="address" name="address" placeholder="지도를 클릭하면 주소를 가져옵니다" required>
+            </div>
+            <button type="button" onclick="submitStore()" class="btn-submit">매장 등록하기</button>
+        </form>
+    </div>
+
+    <div class="map-section">
+        <div id="map"></div>
+    </div>
+</div>
+
+<script src="/webjars/leaflet/1.9.4/dist/leaflet.js"></script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
+
+<script>
+    // 1. 지도 초기화
+    var map = L.map('map').setView([37.5665, 126.9780], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    var marker;
+
+    // 2. 지도 클릭 이벤트
+    map.on('click', async function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        // 마커 이동 또는 생성
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng).addTo(map);
+        }
+
+        // 폼에 위경도 입력
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+
+        // 역지오코딩 (좌표 -> 주소 변환) - Nominatim 무료 API 활용
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await res.json();
+            document.getElementById('address').value = data.display_name || "주소를 찾을 수 없습니다.";
+        } catch (err) {
+            console.error("주소 조회 실패", err);
+        }
+    });
+
+    // 3. 서버에 등록 요청
+    async function submitStore() {
+        const formData = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            latitude: parseFloat(document.getElementById('latitude').value),
+            longitude: parseFloat(document.getElementById('longitude').value),
+            address: document.getElementById('address').value,
+            maxCapacity: parseInt(document.getElementById('maxCapacity').value),
+            active: true
+        };
+
+        if (!formData.latitude || !formData.longitude) {
+            alert("지도를 클릭하여 매장 위치를 선택해주세요.");
+            return;
+        }
+
+        try {
+            const response = await fetchWithAuth('/store/createStore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                alert("매장이 성공적으로 등록되었습니다!");
+                window.location.href = "/store/viewMyStore";
+            } else {
+                const errData = await response.json();
+                alert("등록 실패: " + errData.message);
+            }
+        } catch (error) {
+            console.error("오류 발생:", error);
+            alert("서버 통신 중 오류가 발생했습니다.");
+        }
+    }
+</script>
+</body>
+</html>

@@ -2,90 +2,249 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>메인 지도 페이지</title>
+    <title>매장 예약 서비스</title>
     <link rel="stylesheet" href="/webjars/leaflet/1.9.4/dist/leaflet.css"/>
+    <!-- Bootstrap CSS (모달 및 스타일용, 필요시 추가) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <th:block th:replace="~{header/header :: header-css}"></th:block>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Pretendard', sans-serif; }
         #map { width: 100%; height: 100vh; z-index: 1; }
-        .logo { font-weight: bold; font-size: 1.2rem; color: #333; text-decoration: none; }
-        .nav-menu a {
-            margin-left: 15px;
-            text-decoration: none;
-            color: #555;
-            font-size: 0.9rem;
-            padding: 8px 16px;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-        .nav-menu a.signup-btn {
+
+        /* 지도 위 플로팅 버튼 스타일 */
+        .map-overlay-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
             background-color: #007bff;
             color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
         }
-        .nav-menu a:hover { opacity: 0.8; }
+        .map-overlay-btn:hover { background-color: #0056b3; }
+
+        /* 커스텀 팝업 스타일 */
+        .store-popup .store-name { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+        .store-popup .store-desc { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .store-popup .btn-reserve { width: 100%; }
     </style>
 </head>
 <body>
 <div th:replace="~{header/header :: main-header}"></div>
+
+<!-- 지도 영역 -->
 <div id="map"></div>
 
+<!-- 현 위치에서 매장 찾기 버튼 -->
+<button class="map-overlay-btn" onclick="searchStoresInCurrentView()">현 위치에서 매장 찾기</button>
+
+<!-- 예약 모달 (Bootstrap Modal) -->
+<div class="modal fade" id="reservationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">매장 예약</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalStoreId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold" id="modalStoreName">가게 이름</label>
+                </div>
+                <div class="mb-3">
+                    <label for="visitorCount" class="form-label">방문 인원</label>
+                    <input type="number" class="form-control" id="visitorCount" value="2" min="1">
+                </div>
+                <div class="mb-3">
+                    <label for="reservedAt" class="form-label">예약 시간</label>
+                    <input type="datetime-local" class="form-control" id="reservedAt">
+                </div>
+                <div class="mb-3">
+                    <label for="finishedAt" class="form-label">종료 시간 (예상)</label>
+                    <input type="datetime-local" class="form-control" id="finishedAt">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="submitReservation()">예약하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="/webjars/leaflet/1.9.4/dist/leaflet.js"></script>
-<script src="/webjars/turf__turf/6.5.0/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // 1. 지도 초기화
-    var map = L.map('map' , {
-        zoomControl: false
-    }).setView([37.5665, 126.9780], 12);
-
+    var map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 13);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 2. 현재 위치 가져오기 로직
+    var markers = []; // 마커 관리용 배열
+    var reservationModal = new bootstrap.Modal(document.getElementById('reservationModal'));
+
+    // 2. 현재 위치 가져오기 및 초기 로딩
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
 
-            map.setView([lat, lng], 16);
+            // 지도 이동
+            map.setView([lat, lng], 15);
 
-            // Turf.js 활용 공간 데이터 생성
-            const userPoint = turf.point([lng , lat]);
-            const radiusInKm = Math.max(accuracy, 100) / 10000;
-            const circleModel = turf.circle(userPoint, radiusInKm, { units: 'kilometers', steps: 64 });
+            // 내 위치 마커 (파란색 원)
+            L.circleMarker([lat, lng], {
+                radius: 8,
+                fillColor: "#3388ff",
+                color: "#fff",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map).bindPopup("현재 내 위치");
 
-            // 오차 범위 표시
-            L.geoJSON(circleModel, {
-                style: {
-                    color: 'blue',
-                    fillColor: '#30f',
-                    fillOpacity: 0.2,
-                    weight: 1
-                }
-            }).addTo(map);
-
-            // 현재 위치 마커
-            L.marker([lat, lng]).addTo(map)
-                .openPopup();
+            // 초기 매장 로딩
+            loadStores(lat, lng);
 
         }, function(error) {
-            console.error("위치 정보를 가져오는 데 실패했습니다: ", error.message);
-            // 권한 거부 시 기본 위치 유지 혹은 메시지 출력
-        }, {
-            enableHighAccuracy: true
-        });
+            console.error("위치 정보 실패: ", error.message);
+            // 위치 권한 없으면 서울 시청 기준으로 로드
+            loadStores(37.5665, 126.9780);
+        }, { enableHighAccuracy: true });
+    } else {
+        loadStores(37.5665, 126.9780);
     }
 
-    map.on('click', function(e){
-        var lat = e.latlng.lat;
-        var lng = e.latlng.lng;
+    // 3. 매장 검색 함수 (Backend API 호출)
+    function loadStores(lat, lng) {
+        // 기존 마커 제거
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
 
-        console.log("클릭 좌표 - 위도: " + lat + ", 경도: " + lng);
-    });
+        // API 호출 파라미터 구성 (LocationRequest DTO에 맞춤)
+        const params = new URLSearchParams({
+            latitude: lat,
+            longitude: lng,
+            radius: 1000.0 // 반경 1km (필요시 조정)
+        });
+
+        fetch(`/store/storeList?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) throw new Error("매장 목록을 불러오는데 실패했습니다.");
+                return response.json();
+            })
+            .then(data => {
+                data.forEach(store => {
+                    addStoreMarker(store);
+                });
+            })
+            .catch(error => console.error("Error:", error));
+    }
+
+    // 4. 지도에 매장 마커 추가
+    function addStoreMarker(store) {
+        // 백엔드 StoreResponse DTO 필드명(latitude, longitude)과 맞춤
+        const lat = store.latitude;
+        const lng = store.longitude;
+
+        // 데이터가 정상적으로 들어왔는지 확인
+        if (!lat || !lng) {
+            console.warn(`${store.name} 매장의 좌표 정보가 없습니다.`);
+            return;
+        }
+
+        var marker = L.marker([lat, lng]).addTo(map);
+
+        const popupContent = `
+        <div class="store-popup">
+            <div class="store-name">${store.name}</div>
+            <div class="store-desc">${store.description || '설명 없음'}</div>
+            <div style="font-size:0.8rem; margin-bottom:5px;">📍 ${store.address || '주소 정보 없음'}</div>
+            <button class="btn btn-sm btn-primary btn-reserve"
+                onclick="openReservationModal(${store.id}, '${store.name}')">
+                예약하기
+            </button>
+        </div>
+    `;
+
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    }
+
+    // 5. "현 위치에서 매장 찾기" 버튼 동작
+    function searchStoresInCurrentView() {
+        const center = map.getCenter();
+        loadStores(center.lat, center.lng);
+    }
+
+    // 6. 예약 모달 열기
+    window.openReservationModal = function(storeId, storeName) {
+        document.getElementById('modalStoreId').value = storeId;
+        document.getElementById('modalStoreName').innerText = storeName;
+
+        // 시간 입력 필드 초기화 (현재 시간 + 1시간)
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // 로컬 시간 보정
+        document.getElementById('reservedAt').value = now.toISOString().slice(0, 16);
+
+        now.setHours(now.getHours() + 1);
+        document.getElementById('finishedAt').value = now.toISOString().slice(0, 16);
+
+        reservationModal.show();
+    }
+
+    // 7. 예약 요청 전송 (Backend API 호출)
+    window.submitReservation = function() {
+        const storeId = document.getElementById('modalStoreId').value;
+        const visitorCount = document.getElementById('visitorCount').value;
+        const reservedAt = document.getElementById('reservedAt').value;
+        const finishedAt = document.getElementById('finishedAt').value;
+
+        const requestData = {
+            storeId: parseInt(storeId),
+            visitorCount: parseInt(visitorCount),
+            reservedAt: reservedAt,
+            finishedAt: finishedAt
+        };
+
+        fetch('/reservation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+                // JWT 토큰이 필요하다면 여기에 Authorization 헤더 추가
+                // 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.json().then(err => { throw new Error(err.message || '예약 실패'); });
+                }
+            })
+            .then(data => {
+                alert('예약이 성공적으로 완료되었습니다!');
+                reservationModal.hide();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('예약 중 오류가 발생했습니다: ' + error.message);
+                // 로그인 안된 경우 처리 (예: 403 Forbidden)
+                if(error.message.includes('권한') || error.message.includes('로그인')) {
+                    location.href = '/login'; // 로그인 페이지로 이동
+                }
+            });
+    }
 </script>
 
 <th:block th:replace="~{header/header :: header-js}"></th:block>

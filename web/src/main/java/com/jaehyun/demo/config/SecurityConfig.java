@@ -41,6 +41,9 @@ public class SecurityConfig {
                         .requestMatchers("/" , "/").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
                         .requestMatchers("/auth/signUp" , "/auth/signIn","/auth/reissue").permitAll() // 로그인/회원가입은 허용
+                        .requestMatchers("/myStore" , "/createStore").permitAll()
+                        .requestMatchers("/store/storeList").permitAll()
+                        .requestMatchers("/store/**").authenticated()
                         //나머지는 인증 필요
                         .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

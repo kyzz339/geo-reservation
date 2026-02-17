@@ -1,5 +1,6 @@
 package com.jaehyun.demo.controller;
 
+import com.jaehyun.demo.core.enums.Role;
 import com.jaehyun.demo.dto.request.auth.ReissueRequest;
 import com.jaehyun.demo.dto.request.auth.SignInRequest;
 import com.jaehyun.demo.dto.request.auth.SignUpRequest;
@@ -9,12 +10,17 @@ import com.jaehyun.demo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -57,15 +63,20 @@ public class AuthController {
 
     @GetMapping("/me")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> getMyInfo(){
+    public ResponseEntity<Map<String, Object>> getMyInfo(@AuthenticationPrincipal UserDetails userDetails){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
         String name = authService.findByEmail(email);
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+
         response.put("name", name);
+        response.put("roles", roles);
 
         return ResponseEntity.ok(response);
     }
