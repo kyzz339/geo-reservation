@@ -38,4 +38,8 @@ public class StoreDao {
         return this.storeRepository.listStoreNearBy(myLocation , distance);
     }
 
+    public void deleteAll(){
+        storeRepository.deleteAll();
+    }
+
 }

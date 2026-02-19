@@ -117,7 +117,7 @@ public class ReservationService {
     @Transactional
     public UpdateReservationResponse changeReservation(UpdateReservationRequest request , UserDetails userDetails){
 
-        Reservation savedReservation = this.reservationDao.viewReservation(request.getId())
+        Reservation savedReservation = this.reservationDao.viewReservationWithLock(request.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND ,"reservationId :" + request.getId()));
 
         if(!userDetails.getUsername().equals(savedReservation.getUser().getEmail())){
@@ -133,7 +133,7 @@ public class ReservationService {
         //예약 가능 시간 체크
         Integer reservedCount = reservationDao.getSumVisitorCountExcludeMine(savedReservation.getStore().getId() , start , end , userDetails.getUsername());
 
-        if(savedReservation.getVisitorCount() + reservedCount > savedReservation.getStore().getMaxCapacity()){
+        if(request.getVisitorCount() + reservedCount > savedReservation.getStore().getMaxCapacity()){
             throw new CustomException(ErrorCode.CAPACITY_EXCEEDED , "requestVistor : " + request.getVisitorCount());
         }
         //예약 변경

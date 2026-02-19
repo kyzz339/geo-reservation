@@ -45,5 +45,13 @@ public class ReservationDao {
         return this.reservationRepository.findById(id);
     }
 
+    public Optional<Reservation> viewReservationWithLock(Long id){
+        return this.reservationRepository.findWithLockById(id);
+    }
+
+    public void deleteAll(){
+        this.reservationRepository.deleteAll();
+    }
+
 
 }

@@ -24,4 +24,8 @@ public class UserDao {
     public boolean existsByEmail(String email){
         return userRepository.existsByEmail(email);
     }
+
+    public void deleteAll(){
+        this.userRepository.deleteAll();
+    }
 }

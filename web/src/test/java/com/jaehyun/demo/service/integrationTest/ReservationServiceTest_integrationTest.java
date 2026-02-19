@@ -17,6 +17,8 @@ import com.jaehyun.demo.dto.response.reservation.CreateReservationResponse;
 import com.jaehyun.demo.dto.response.reservation.ReservationResponse;
 import com.jaehyun.demo.service.ReservationService;
 import com.jaehyun.demo.service.integrationTest.support.IntegrationTestSupport;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -25,11 +27,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,6 +46,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("test")
 @Transactional
 public class ReservationServiceTest_integrationTest extends IntegrationTestSupport {
+
+    @Autowired
+    private EntityManager em;
 
     @Autowired
     private ReservationService reservationService;
@@ -53,6 +64,18 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
 
     @Autowired
     private GeometryFactory geometryFactory;
+
+    @BeforeEach
+    void setUp() {
+        reservationDao.deleteAll();
+        storeDao.deleteAll();
+        userDao.deleteAll();
+
+        if (TestTransaction.isActive()) {
+            em.flush();
+            em.clear();
+        }
+    }
 
     @Test
     @DisplayName("예약 생성 - 성공")
@@ -277,6 +300,139 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
         assertThat(result.getStatus()).isEqualTo(ReservationStatus.CANCELED);
     }
 
+    @Test
+    @DisplayName("동시성 테스트 createReservation")
+    void concurrntCreateReservation() throws InterruptedException{
+
+        User owner = createTestUser("owner@test.com");
+        Store store = createTestStore("테스트 가게" , owner);
+
+        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime endTime = startTime.plusHours(1);
+
+        int threadCount = 100; //가상 유저 수
+        List<User> testUsers = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            testUsers.add(createTestUser(i + "user@test.com"));
+        }
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start(); // 계정 미리 commit
+
+        ExecutorService executorService = Executors.newFixedThreadPool(32); // 스레드 풀 -> 스레드 관리
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+
+        for(int i=0; i<threadCount; i++){
+
+            User user = testUsers.get(i);
+
+            UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                    .password("password").authorities("ROLE_USER").build();
+
+            CreateReservationRequest createRequest = CreateReservationRequest.builder()
+                            .storeId(store.getId())
+                            .visitorCount(1)
+                            .reservedAt(startTime)
+                            .finishedAt(endTime)
+                            .build();
+
+            executorService.submit(() ->{
+                try {
+                    reservationService.createReservation(createRequest, userDetails);
+                    successCount.incrementAndGet();
+                }catch (Exception e){
+                    failCount.incrementAndGet();
+                }finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+        System.out.println("최종 결과 -> 성공: " + successCount.get() + ", 실패: " + failCount.get());
+        assertThat(successCount.get()).isEqualTo(store.getMaxCapacity());
+
+    }
+
+    @Test
+    @DisplayName("동시성 테스트 updateReservation")
+    void concurrtUpdateReservation() throws InterruptedException{
+
+        User owner = createTestUser("owner@test.com");
+        Store store = createTestStore("테스트 가게" , owner);
+
+        LocalDateTime startTime = LocalDateTime.of(2026, 2, 20, 10, 0);
+        LocalDateTime endTime = startTime.plusHours(1);
+
+        int threadCount = 20;
+
+        List<User> testUsers = new ArrayList<>();
+        List<Long> reservationIds = new ArrayList<>();
+
+        for (int i = 0; i < threadCount; i++) {
+            User user = createTestUser(i + "update_user@test.com");
+            testUsers.add(user);
+
+            Reservation reservation = Reservation.builder()
+                    .user(user)
+                    .store(store)
+                    .visitorCount(1)
+                    .reservedAt(startTime)
+                    .finishedAt(endTime)
+                    .status(ReservationStatus.PENDING)
+                    .build();
+
+            Reservation saved = reservationDao.saveReservation(reservation);
+            reservationIds.add(saved.getId());
+        }
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+
+        for(int i=0; i<threadCount; i++){
+            int index= i;
+            User user = testUsers.get(index);
+            Long resId = reservationIds.get(index);
+
+            UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                    .password("password").authorities("ROLE_USER").build();
+
+            UpdateReservationRequest updateRequest = UpdateReservationRequest.builder()
+                    .id(resId)
+                    .visitorCount(2)
+                    .reservedAt(startTime)
+                    .finishedAt(endTime)
+                    .build();
+
+            executorService.submit(() ->{
+               try{
+                   reservationService.changeReservation(updateRequest, userDetails);
+                   successCount.incrementAndGet();
+               } catch (Exception e){
+                   failCount.incrementAndGet();
+               }finally {
+                   latch.countDown();
+               }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        System.out.println("최종 결과 -> 변경 성공: " + successCount.get() + ", 변경 실패: " + failCount.get());
+        assertThat(successCount.get()).isEqualTo(0);
+
+    }
 
 
     private Reservation createReservation(User user, Store store , ReservationStatus status) {
