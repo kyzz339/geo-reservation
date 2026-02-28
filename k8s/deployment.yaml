@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-store-service
+  labels:
+    app: my-store-service
+spec:
+  replicas: 2 # 미니 PC 사양을 고려해 2개 정도 띄웁니다.
+  selector:
+    matchLabels:
+      app: my-store-service
+  template:
+    metadata:
+      labels:
+        app: my-store-service
+    spec:
+      containers:
+        - name: my-store-service
+          image: jaehyun1217
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          # DB 연결 정보 등 환경 변수를 여기서 설정할 수 있습니다.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-store-service-svc
+spec:
+  selector:
+    app: my-store-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort # 외부 브라우저에서 접속하기 위해 NodePort 설정
