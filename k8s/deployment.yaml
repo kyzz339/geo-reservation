@@ -5,7 +5,7 @@ metadata:
   labels:
     app: my-store-service
 spec:
-  replicas: 2 # 미니 PC 사양을 고려해 2개 정도 띄웁니다.
+  replicas: 3 # 미니 PC 사양을 고려해 2개 정도 띄웁니다.
   selector:
     matchLabels:
       app: my-store-service
