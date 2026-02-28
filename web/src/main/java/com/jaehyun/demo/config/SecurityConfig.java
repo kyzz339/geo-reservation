@@ -1,6 +1,7 @@
 package com.jaehyun.demo.config;
 
 import com.jaehyun.demo.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.HashMap;
@@ -24,7 +26,7 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // @PreAuthorize 사용을 위해 필수
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -39,19 +41,36 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 공통 정적 리소스 및 메인 페이지 허용
-                        .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-                        // 2. 인증 관련 경로 허용
-                        .requestMatchers("/auth/signUp", "/auth/signIn", "/auth/reissue").permitAll()
-                        // 3. 뷰(HTML) 경로 허용 (데이터는 API에서 @PreAuthorize로 보호함)
-                        .requestMatchers("/myStore", "/createStore", "/store/manage/**").permitAll()
-                        // 4. 공용 조회 API 허용
+                        // 1. 공통 허용 경로
+                        .requestMatchers("/", "/index", "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/store/storeList", "/store/viewStore/**").permitAll()
-                        // 5. 그 외 모든 요청은 인증 필요
+
+                        // 2. 사장님(OWNER) 전용: 매장 관리 및 예약 현황 확인
+                        .requestMatchers("/store/myStore", "/store/createStore", "/store/manage/**", "/store/reservation/**").hasRole("OWNER")
+                        .requestMatchers("/store/updateStore", "/store/deleteStore/**", "/store/viewMyStore").hasRole("OWNER")
+
+                        // 3. 손님(USER) 전용: 본인 예약 확인 및 예약 생성
+                        .requestMatchers("/reservation/myReservation", "/reservation/my").hasRole("USER")
+                        .requestMatchers("/reservation").hasRole("USER")
+
+                        // 4. 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
-                ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(accessDeniedHandler())
+                );
 
         return http.build();
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            // 권한이 없는 접근(사장님이 손님 페이지 가거나, 손님이 사장님 페이지 갈 때) 시 메인으로 리다이렉트
+            response.sendRedirect("/");
+        };
     }
 
     @Bean

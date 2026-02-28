@@ -26,7 +26,7 @@
 <div class="container">
     <div class="page-header">
         <h2>내 매장 관리</h2>
-        <a href="/createStore" class="btn-create">+ 새 매장 등록</a>
+        <a href="/store/createStore" class="btn-create">+ 새 매장 등록</a>
     </div>
 
     <div id="store-list">
@@ -64,7 +64,10 @@
                                 영업시간: ${store.openTime ? store.openTime.substring(0,5) : '미설정'} ~ ${store.closeTime ? store.closeTime.substring(0,5) : '미설정'}
                             </p>
                         </div>
-                        <a href="/store/manage/${store.id}" class="btn-manage">관리하기</a>
+                        <div class="store-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <a href="/store/reservation/${store.id}" class="btn-manage" style="background-color: #6c757d;">예약 확인</a>
+                            <a href="/store/manage/${store.id}" class="btn-manage">관리하기</a>
+                        </div>
                     `;
                     storeListContainer.appendChild(card);
                 });

@@ -42,8 +42,11 @@
         <div id="auth-user" style="display: none;">
             <span id="user-name-display" style="font-size: 0.9rem; color: #333; font-weight: bold;"></span>님
 
-            <!-- 매장 생성 버튼 (기본적으로 숨김, JS로 제어) -->
-            <a href="/myStore" id="create-store-btn" class="create-store-btn" style="display: none;">매장</a>
+            <!-- 사장님용 매장 관리 버튼 -->
+            <a href="/store/myStore" id="create-store-btn" class="create-store-btn" style="display: none;">매장</a>
+
+            <!-- 손님용 예약 확인 버튼 -->
+            <a href="/reservation/myReservation" id="my-reservation-btn" class="create-store-btn" style="display: none; background-color: #17a2b8;">예약</a>
 
             <a href="#" onclick="logout()" class="signup-btn">로그아웃</a>
         </div>
@@ -58,6 +61,7 @@
             const userMenu = document.getElementById('auth-user');
             const nameDisplay = document.getElementById('user-name-display');
             const createStoreBtn = document.getElementById('create-store-btn');
+            const myReservationBtn = document.getElementById('my-reservation-btn');
 
             if (token) {
                 try {
@@ -78,11 +82,16 @@
                         if (isOwner) {
                             localStorage.setItem('userRole', 'ROLE_OWNER');
                             createStoreBtn.style.display = 'inline-block';
+                            myReservationBtn.style.display = 'none';
+
+                            // OWNER 리다이렉트 처리: 현재 페이지가 루트('/')면 /store/myStore로 이동
                             if (window.location.pathname === '/') {
-                                window.location.href = '/myStore';
+                                window.location.href = '/store/myStore';
                             }
                         } else {
                             localStorage.setItem('userRole', 'ROLE_USER');
+                            createStoreBtn.style.display = 'none';
+                            myReservationBtn.style.display = 'inline-block';
                         }
 
                         guestMenu.style.display = 'none';
@@ -136,6 +145,11 @@
         function logout() {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userRole');
+            
+            // 쿠키 삭제 (만료 시간을 과거로 설정)
+            document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict";
+            
             alert("로그아웃 되었습니다.");
             window.location.href = "/";
         }

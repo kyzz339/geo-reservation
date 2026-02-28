@@ -74,6 +74,9 @@
             localStorage.setItem('accessToken', tokenData.accessToken);
             localStorage.setItem('refreshToken', tokenData.refreshToken);
 
+            // 쿠키에도 저장 (페이지 접근 인증용)
+            document.cookie = `accessToken=${tokenData.accessToken}; path=/; max-age=3600; SameSite=Strict`;
+
             alert("로그인이 완료되었습니다.");
             window.location.href = "/";
         }else{

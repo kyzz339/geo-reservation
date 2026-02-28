@@ -9,27 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class WebController {
 
     @GetMapping("/")
-    public String index(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails != null && userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_OWNER"))) {
-            return "redirect:/myStore";
-        }
+    public String index() {
         return "index";
-    }
-
-    @GetMapping("/myStore")
-    public String viewMyStore() {
-        return "store/viewMyStore";
-    }
-
-    @GetMapping("/createStore")
-    public String createStore() {
-        return "store/createStore";
-    }
-
-    @GetMapping("/store/manage/{id}")
-    public String manageStore() {
-        return "store/manageStore";
     }
 
 }

@@ -108,7 +108,7 @@
                     <input type="time" id="closeTime" name="closeTime" value="22:00" required>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="display:none">
                 <label>위경도 정보</label>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" id="latitude" name="latitude" placeholder="위도" readonly>
@@ -193,7 +193,7 @@
 
             if (response.ok) {
                 alert("매장이 성공적으로 등록되었습니다!");
-                window.location.href = "/store/viewMyStore";
+                window.location.href = "/store/myStore";
             } else {
                 const errData = await response.json();
                 alert("등록 실패: " + errData.message);

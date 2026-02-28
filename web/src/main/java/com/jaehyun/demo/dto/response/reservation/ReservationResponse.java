@@ -17,8 +17,10 @@ import java.time.LocalDateTime;
 public class ReservationResponse {
 
     private Long id;
-    private String userName;
+    private String userName; // 예약자명
     private String userEmail;
+    private String storeName; // 가게 이름 추가
+    private Long storeId;
     private Integer visitorCount;
     private LocalDateTime reservedAt;
     private LocalDateTime finishedAt;
@@ -31,6 +33,8 @@ public class ReservationResponse {
                 .id(reservation.getId())
                 .userName(reservation.getUser().getName())
                 .userEmail(reservation.getUser().getEmail())
+                .storeName(reservation.getStore().getName()) // 가게 이름 설정
+                .storeId(reservation.getStore().getId())
                 .visitorCount(reservation.getVisitorCount())
                 .reservedAt(reservation.getReservedAt())
                 .finishedAt(reservation.getFinishedAt())
@@ -40,17 +44,9 @@ public class ReservationResponse {
     }
 
     public static ReservationResponse fromWithStore(Reservation reservation){
-        return ReservationResponse.builder()
-                .storeResponse(StoreResponse.from(reservation.getStore()))
-                .id(reservation.getId())
-                .userName(reservation.getUser().getName())
-                .userEmail(reservation.getUser().getEmail())
-                .visitorCount(reservation.getVisitorCount())
-                .reservedAt(reservation.getReservedAt())
-                .finishedAt(reservation.getFinishedAt())
-                .status(reservation.getStatus())
-                .createdAt(reservation.getCreatedAt())
-                .build();
+        ReservationResponse response = from(reservation);
+        response.setStoreResponse(StoreResponse.from(reservation.getStore()));
+        return response;
     }
 
 }
