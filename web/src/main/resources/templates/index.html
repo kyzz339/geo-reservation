@@ -239,9 +239,9 @@
         fetch('/reservation', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
                 // JWT 토큰이 필요하다면 여기에 Authorization 헤더 추가
-                // 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
             },
             body: JSON.stringify(requestData)
         })

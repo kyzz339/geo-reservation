@@ -1,8 +1,8 @@
 package com.jaehyun.demo.controller;
 
-
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
 import com.jaehyun.demo.dto.request.store.LocationRequest;
+import com.jaehyun.demo.dto.request.store.UpdateStoreRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
 import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
 import com.jaehyun.demo.dto.response.store.StoreResponse;
@@ -23,14 +23,22 @@ public class StoreController {
 
     private final StoreService storeService;
 
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/createStore")
     public ResponseEntity<CreateStoreResponse> createStore(@RequestBody CreateStoreRequest request, @AuthenticationPrincipal UserDetails userDetails){
-        return ResponseEntity.ok(this.storeService.createStore(request , userDetails));
+        return ResponseEntity.ok(this.storeService.createStore(request, userDetails));
     }
 
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("/updateStore")
+    public ResponseEntity<StoreResponse> updateStore(@RequestBody UpdateStoreRequest request, @AuthenticationPrincipal UserDetails userDetails){
+        return ResponseEntity.ok(this.storeService.updateStore(request, userDetails));
+    }
+
+    @PreAuthorize("hasRole('OWNER')")
     @PostMapping("/deleteStore/{id}")
-    public ResponseEntity<DeleteStoreResponse> deleteStore(@PathVariable(name = "id") Long id , @AuthenticationPrincipal UserDetails userDetails){
-        return ResponseEntity.ok(this.storeService.deleteStore(id , userDetails));
+    public ResponseEntity<DeleteStoreResponse> deleteStore(@PathVariable(name = "id") Long id, @AuthenticationPrincipal UserDetails userDetails){
+        return ResponseEntity.ok(this.storeService.deleteStore(id, userDetails));
     }
 
     @GetMapping("/viewStore/{id}")
@@ -45,10 +53,7 @@ public class StoreController {
     }
 
     @GetMapping("/storeList")
-    public ResponseEntity<List<StoreResponse>> storeList(LocationRequest reqeuest){
-        return ResponseEntity.ok(this.storeService.storeList(reqeuest));
+    public ResponseEntity<List<StoreResponse>> storeList(LocationRequest request){
+        return ResponseEntity.ok(this.storeService.storeList(request));
     }
-
-
-
 }

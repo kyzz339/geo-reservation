@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.jaehyun.demo.core.enums.ReservationStatus.PENDING;
@@ -45,6 +46,8 @@ public class ReservationService {
 
         Store existStore = storeDao.getStore(request.getStoreId())
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND , "StoreId : " + request.getStoreId()));
+
+        validateReservationTime(existStore, request.getReservedAt());
 
         em.lock(existStore , LockModeType.PESSIMISTIC_WRITE); // 예약 인원이 0일경우 락이 걸리지 않기 떄문에 store은 무조건 존재하기 떄문에 lock, 해당 트랜잭션이 끝날때까지 lock이 걸림
 
@@ -129,6 +132,8 @@ public class ReservationService {
 
         Store savedStore = savedReservation.getStore();
 
+        validateReservationTime(savedStore, start);
+
         em.lock(savedStore , LockModeType.PESSIMISTIC_WRITE);
         //예약 가능 시간 체크
         Integer reservedCount = reservationDao.getSumVisitorCountExcludeMine(savedReservation.getStore().getId() , start , end , userDetails.getUsername());
@@ -142,6 +147,16 @@ public class ReservationService {
         savedReservation.setVisitorCount(request.getVisitorCount());
 
         return UpdateReservationResponse.from(savedReservation);
+    }
+
+    private void validateReservationTime(Store store, LocalDateTime reservationDateTime) {
+        LocalTime reservationTime = reservationDateTime.toLocalTime();
+        if (store.getOpenTime() != null && reservationTime.isBefore(store.getOpenTime())) {
+            throw new CustomException(ErrorCode.INVALID_RESERVATION_TIME, "Store open time : " + store.getOpenTime());
+        }
+        if (store.getCloseTime() != null && reservationTime.isAfter(store.getCloseTime())) {
+            throw new CustomException(ErrorCode.INVALID_RESERVATION_TIME, "Store close time : " + store.getCloseTime());
+        }
     }
 
 }

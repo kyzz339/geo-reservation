@@ -26,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)throws ServletException , IOException {
         String path = request.getRequestURI();
 
-        if (path.equals("/") || path.startsWith("/auth/signIn") || path.startsWith("/auth/signUp")
+        if (path.startsWith("/auth/signIn") || path.startsWith("/auth/signUp")
                 || path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/webjars/")) {
 
             filterChain.doFilter(request, response);

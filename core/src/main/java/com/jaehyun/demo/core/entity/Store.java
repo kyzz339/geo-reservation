@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @Entity
@@ -44,6 +45,12 @@ public class Store{
 
     @Column(nullable = false)
     private Integer maxCapacity;
+
+    @Column
+    private LocalTime openTime;
+
+    @Column
+    private LocalTime closeTime;
 
     @Column
     private boolean active;

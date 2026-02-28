@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -74,6 +75,8 @@ public class StoreServiceTest_integrationTest extends IntegrationTestSupport {
                 .latitude(37.5446)
                 .address("서울시 성동구 성수동")
                 .maxCapacity(30)
+                .openTime(LocalTime.of(9, 0))
+                .closeTime(LocalTime.of(22, 0))
                 .build();
 
         CreateStoreResponse createStoreReseponse = storeService.createStore(createStoreRequest , userDetails);

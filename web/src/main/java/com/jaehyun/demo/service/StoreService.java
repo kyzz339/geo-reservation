@@ -8,6 +8,7 @@ import com.jaehyun.demo.core.entity.Store;
 import com.jaehyun.demo.core.entity.User;
 import com.jaehyun.demo.dto.request.store.CreateStoreRequest;
 import com.jaehyun.demo.dto.request.store.LocationRequest;
+import com.jaehyun.demo.dto.request.store.UpdateStoreRequest;
 import com.jaehyun.demo.dto.response.store.CreateStoreResponse;
 import com.jaehyun.demo.dto.response.store.DeleteStoreResponse;
 import com.jaehyun.demo.dto.response.store.StoreResponse;
@@ -47,6 +48,8 @@ public class StoreService {
                 .location(location)
                 .address(request.getAddress())
                 .maxCapacity(request.getMaxCapacity())
+                .openTime(request.getOpenTime())
+                .closeTime(request.getCloseTime())
                 .active(Boolean.TRUE)
                 .deleted(Boolean.FALSE)
                 .owner(owner)
@@ -58,6 +61,32 @@ public class StoreService {
                 .id(savedStore.getId())
                 .name(savedStore.getName())
                 .build();
+    }
+
+    //매장 수정
+    @Transactional
+    public StoreResponse updateStore(UpdateStoreRequest request, UserDetails userDetails) {
+        Store savedStore = this.storeDao.getStore(request.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND, "StoreId : " + request.getId()));
+
+        if (!savedStore.getOwner().getEmail().equals(userDetails.getUsername())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS, "ID : " + userDetails.getUsername());
+        }
+
+        if (request.getName() != null) savedStore.setName(request.getName());
+        if (request.getDescription() != null) savedStore.setDescription(request.getDescription());
+        if (request.getAddress() != null) savedStore.setAddress(request.getAddress());
+        if (request.getMaxCapacity() != null) savedStore.setMaxCapacity(request.getMaxCapacity());
+        if (request.getOpenTime() != null) savedStore.setOpenTime(request.getOpenTime());
+        if (request.getCloseTime() != null) savedStore.setCloseTime(request.getCloseTime());
+        if (request.getActive() != null) savedStore.setActive(request.getActive());
+
+        if (request.getLatitude() != null && request.getLongitude() != null) {
+            Point location = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
+            savedStore.setLocation(location);
+        }
+
+        return StoreResponse.from(savedStore);
     }
     //매장 삭제
     @Transactional

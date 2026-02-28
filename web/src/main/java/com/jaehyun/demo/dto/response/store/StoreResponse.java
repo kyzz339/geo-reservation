@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,8 @@ public class StoreResponse {
     private Double latitude;
     private Double longitude;
     private String address;
+    private LocalTime openTime;
+    private LocalTime closeTime;
 
     public static StoreResponse from(Store store){
         return StoreResponse.builder()
@@ -27,6 +31,8 @@ public class StoreResponse {
                 .latitude(store.getLocation().getY())
                 .longitude(store.getLocation().getX())
                 .address(store.getAddress())
+                .openTime(store.getOpenTime())
+                .closeTime(store.getCloseTime())
                 .build();
     }
 

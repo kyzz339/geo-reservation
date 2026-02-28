@@ -60,6 +60,9 @@
                         <div class="store-info">
                             <h3>${store.name}</h3>
                             <p>${store.address}</p>
+                            <p style="color: #555; font-size: 0.85rem; margin-top: 5px;">
+                                영업시간: ${store.openTime ? store.openTime.substring(0,5) : '미설정'} ~ ${store.closeTime ? store.closeTime.substring(0,5) : '미설정'}
+                            </p>
                         </div>
                         <a href="/store/manage/${store.id}" class="btn-manage">관리하기</a>
                     `;

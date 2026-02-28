@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>매장 정보 수정</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="/webjars/leaflet/1.9.4/dist/leaflet.css"/>
+    <th:block th:replace="~{header/header :: header-css}"></th:block>
+    <style>
+        body { padding-top: 90px; background-color: #f8f9fa; font-family: 'Pretendard', sans-serif; }
+        .container { max-width: 1100px; margin: 0 auto; display: flex; gap: 20px; padding: 20px; align-items: flex-start; }
+        .form-section { flex: 1; min-height: 600px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; box-sizing: border-box; }
+        .map-section { flex: 1; height: 600px; border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6; box-shadow: 0 4px 12px rgba(0,0,0,0.08); box-sizing: border-box; }
+        #map { width: 100%; height: 100%; }
+        h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 0.95rem; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
+        input[readonly] { background-color: #e9ecef; cursor: not-allowed; }
+        .btn-submit { margin-top: auto; width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-submit:hover { background-color: #0069d9; }
+        .btn-delete { margin-top: 10px; width: 100%; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+        .hint { font-size: 0.8rem; color: #6c757d; margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{header/header :: main-header}"></div>
+
+<div class="container">
+    <div class="form-section">
+        <h2 id="page-title">매장 정보 수정</h2>
+        <form id="store-form">
+            <input type="hidden" id="storeId">
+            <div class="form-group">
+                <label>매장명</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>매장 설명</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>최대 수용 인원</label>
+                <input type="number" id="maxCapacity" name="maxCapacity" required>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>오픈 시간</label>
+                    <input type="time" id="openTime" name="openTime" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>마감 시간</label>
+                    <input type="time" id="closeTime" name="closeTime" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>위경도 정보</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="latitude" name="latitude" readonly>
+                    <input type="text" id="longitude" name="longitude" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>상세 주소</label>
+                <input type="text" id="address" name="address" required>
+            </div>
+            <button type="button" onclick="updateStore()" class="btn-submit">저장하기</button>
+            <button type="button" onclick="deleteStore()" class="btn-delete">매장 삭제</button>
+        </form>
+    </div>
+
+    <div class="map-section">
+        <div id="map"></div>
+    </div>
+</div>
+
+<script src="/webjars/leaflet/1.9.4/dist/leaflet.js"></script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
+
+<script>
+    const urlPath = window.location.pathname;
+    const storeId = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+    document.getElementById('storeId').value = storeId;
+
+    var map = L.map('map').setView([37.5665, 126.9780], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    var marker;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetchWithAuth(`/store/viewStore/${storeId}`);
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('name').value = data.name;
+                document.getElementById('description').value = data.description;
+                document.getElementById('maxCapacity').value = data.maxCapacity || 10;
+                document.getElementById('openTime').value = data.openTime ? data.openTime.substring(0, 5) : "09:00";
+                document.getElementById('closeTime').value = data.closeTime ? data.closeTime.substring(0, 5) : "22:00";
+                document.getElementById('latitude').value = data.latitude;
+                document.getElementById('longitude').value = data.longitude;
+                document.getElementById('address').value = data.address;
+
+                const latlng = [data.latitude, data.longitude];
+                map.setView(latlng, 16);
+                marker = L.marker(latlng).addTo(map);
+            }
+        } catch (err) { console.error("데이터 로드 실패", err); }
+    });
+
+    map.on('click', async function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        if (marker) marker.setLatLng(e.latlng);
+        else marker = L.marker(e.latlng).addTo(map);
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await res.json();
+            document.getElementById('address').value = data.display_name || "";
+        } catch (err) {}
+    });
+
+    async function updateStore() {
+        const formData = {
+            id: parseInt(document.getElementById('storeId').value),
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            latitude: parseFloat(document.getElementById('latitude').value),
+            longitude: parseFloat(document.getElementById('longitude').value),
+            address: document.getElementById('address').value,
+            maxCapacity: parseInt(document.getElementById('maxCapacity').value),
+            openTime: document.getElementById('openTime').value + ":00",
+            closeTime: document.getElementById('closeTime').value + ":00",
+            active: true
+        };
+
+        try {
+            const response = await fetchWithAuth('/store/updateStore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (response.ok) {
+                alert("수정되었습니다.");
+                window.location.href = "/myStore";
+            }
+        } catch (error) { alert("수정 실패"); }
+    }
+
+    async function deleteStore() {
+        if(!confirm("정말 삭제하시겠습니까?")) return;
+        try {
+            const response = await fetchWithAuth(`/store/deleteStore/${storeId}`, { method: 'POST' });
+            if (response.ok) {
+                alert("삭제되었습니다.");
+                window.location.href = "/myStore";
+            }
+        } catch (error) { alert("삭제 실패"); }
+    }
+</script>
+</body>
+</html>

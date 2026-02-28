@@ -72,11 +72,17 @@
                         nameDisplay.innerText = data.name;
 
                         // 권한 체크 로직
-                        // 백엔드 응답의 필드명(role, type 등)과 값(OWNER, ROLE_OWNER)을 확인하여 조건 수정 필요
                         const userRoles = data.roles || [];
+                        const isOwner = userRoles.includes('ROLE_OWNER') || userRoles.includes('OWNER');
 
-                        if (userRoles.includes('ROLE_OWNER')) {
+                        if (isOwner) {
+                            localStorage.setItem('userRole', 'ROLE_OWNER');
                             createStoreBtn.style.display = 'inline-block';
+                            if (window.location.pathname === '/') {
+                                window.location.href = '/myStore';
+                            }
+                        } else {
+                            localStorage.setItem('userRole', 'ROLE_USER');
                         }
 
                         guestMenu.style.display = 'none';

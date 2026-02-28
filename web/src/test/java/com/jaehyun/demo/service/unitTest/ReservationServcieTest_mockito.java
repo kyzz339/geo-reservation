@@ -378,7 +378,7 @@ public class ReservationServcieTest_mockito {
 
         UserDetails userDetails = mock(UserDetails.class);
 
-        when(reservationDao.viewReservation(1L)).thenReturn(Optional.of(exsistReservation));
+        when(reservationDao.viewReservationWithLock(1L)).thenReturn(Optional.of(exsistReservation));
         when(userDetails.getUsername()).thenReturn(email);
         LocalDateTime start = LocalDateTime.now();
         LocalDateTime end = LocalDateTime.now().plusHours(1);
@@ -393,7 +393,7 @@ public class ReservationServcieTest_mockito {
 
         UpdateReservationResponse response = reservationService.changeReservation(request , userDetails);
 
-        verify(reservationDao , times(1)).viewReservation(1L);
+        verify(reservationDao , times(1)).viewReservationWithLock(1L);
 
         assertEquals(response.getId() , request.getId());
         assertEquals(response.getStatus() , ReservationStatus.PENDING);

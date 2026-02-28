@@ -31,6 +31,7 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,7 +88,7 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
 
         Store store = createTestStore("테스트 가게" , owner);
 
-        LocalDateTime reserveTime = LocalDateTime.now();
+        LocalDateTime reserveTime = LocalDateTime.of(2026, 2, 28, 14, 0); // Open time is 09:00
 
         CreateReservationRequest request = CreateReservationRequest.builder()
                 .storeId(store.getId())
@@ -122,6 +123,39 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
     }
 
     @Test
+    @DisplayName("예약 생성 - 실패 (영업시간 아님)")
+    void createReservation_fail_invalidTime(){
+
+        String ownerEmail = "owner@test.com";
+        User owner = createTestOwner(ownerEmail);
+        Store store = createTestStore("테스트 가게" , owner);
+
+        LocalDateTime reserveTime = LocalDateTime.of(2026, 2, 28, 8, 0); // Open time is 09:00
+
+        CreateReservationRequest request = CreateReservationRequest.builder()
+                .storeId(store.getId())
+                .visitorCount(5)
+                .reservedAt(reserveTime)
+                .finishedAt(reserveTime.plusHours(1))
+                .build();
+
+        String userEmail = "user@test.com";
+        User user = createTestUser(userEmail);
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(userEmail)
+                .password("password")
+                .authorities("ROLE_USER")
+                .build();
+
+        CustomException exception = assertThrows(CustomException.class, () ->{
+            reservationService.createReservation(request , userDetails);
+        });
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.INVALID_RESERVATION_TIME);
+    }
+
+    @Test
     @DisplayName("예약 실패 - 수용인원 초과")
     void createReservation_fail_overCapacity(){
         String ownerEmail = "owner@test.com";
@@ -130,7 +164,7 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
 
         Store store = createTestStore("테스트 가게" , owner);
 
-        LocalDateTime reserveTime = LocalDateTime.now();
+        LocalDateTime reserveTime = LocalDateTime.of(2026, 2, 28, 14, 0);
 
         CreateReservationRequest request = CreateReservationRequest.builder()
                 .storeId(store.getId())
@@ -187,24 +221,24 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
                         .user(user)
                         .store(store)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 10, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 11, 0))
                         .status(ReservationStatus.PENDING)
                         .build(),
                 Reservation.builder()
                         .user(user)
                         .store(otherStore)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 10, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 11, 0))
                         .status(ReservationStatus.PENDING)
                         .build(),
                 Reservation.builder()
                         .user(user)
                         .store(store)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 12, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 13, 0))
                         .status(ReservationStatus.PENDING)
                         .build()
         );
@@ -251,24 +285,24 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
                         .user(user)
                         .store(store)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 10, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 11, 0))
                         .status(ReservationStatus.PENDING)
                         .build(),
                 Reservation.builder()
                         .user(user)
                         .store(otherStore)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 10, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 11, 0))
                         .status(ReservationStatus.PENDING)
                         .build(),
                 Reservation.builder()
                         .user(user)
                         .store(store)
                         .visitorCount(5)
-                        .reservedAt(LocalDateTime.now())
-                        .finishedAt(LocalDateTime.now().plusHours(1))
+                        .reservedAt(LocalDateTime.of(2026, 2, 28, 12, 0))
+                        .finishedAt(LocalDateTime.of(2026, 2, 28, 13, 0))
                         .status(ReservationStatus.PENDING)
                         .build()
         );
@@ -307,7 +341,7 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
         User owner = createTestUser("owner@test.com");
         Store store = createTestStore("테스트 가게" , owner);
 
-        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime startTime = LocalDateTime.of(2026, 2, 28, 14, 0);
         LocalDateTime endTime = startTime.plusHours(1);
 
         int threadCount = 100; //가상 유저 수
@@ -366,7 +400,7 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
         User owner = createTestUser("owner@test.com");
         Store store = createTestStore("테스트 가게" , owner);
 
-        LocalDateTime startTime = LocalDateTime.of(2026, 2, 20, 10, 0);
+        LocalDateTime startTime = LocalDateTime.of(2026, 2, 28, 10, 0);
         LocalDateTime endTime = startTime.plusHours(1);
 
         int threadCount = 20;
@@ -440,8 +474,8 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
                 .user(user)
                 .store(store)
                 .visitorCount(5)
-                .reservedAt(LocalDateTime.now())
-                .finishedAt(LocalDateTime.now().plusHours(1))
+                .reservedAt(LocalDateTime.of(2026, 2, 28, 14, 0))
+                .finishedAt(LocalDateTime.of(2026, 2, 28, 15, 0))
                 .status(status)
                 .build();
     }
@@ -480,6 +514,8 @@ public class ReservationServiceTest_integrationTest extends IntegrationTestSuppo
                 .location(geometryFactory.createPoint(new Coordinate(127.0, 37.0)))
                 .address("서울시")
                 .maxCapacity(20)
+                .openTime(LocalTime.of(9, 0))
+                .closeTime(LocalTime.of(22, 0))
                 .deleted(false)
                 .build();
 

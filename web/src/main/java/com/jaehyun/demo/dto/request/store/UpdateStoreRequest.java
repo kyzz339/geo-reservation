@@ -11,8 +11,9 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateStoreRequest {
+public class UpdateStoreRequest {
 
+    private Long id;
     private String name;
     private String description;
     private Double latitude;
