@@ -30,7 +30,12 @@ public class AuthController {
 
     @GetMapping("/signUp")
     public String signUp() {
-        return "/auth/signUp";
+        return "auth/signUp";
+    }
+
+    @GetMapping("/signIn")
+    public String signIn() {
+        return "auth/signIn";
     }
 
     @ResponseBody
@@ -38,11 +43,6 @@ public class AuthController {
     public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
         SignUpResponse signUpResponse = authService.signUp(signUpRequest);
         return ResponseEntity.status(201).body(signUpResponse);
-    }
-
-    @GetMapping("/signIn")
-    public String signIn() {
-        return "/auth/signIn";
     }
 
     @ResponseBody
