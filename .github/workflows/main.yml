@@ -10,6 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set SHA
+      run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
     - name: Set up JDK 21 # Java 21 설정
       uses: actions/setup-java@v4
       with:
@@ -37,4 +40,18 @@ jobs:
         # 멀티 모듈은 빌드된 jar 위치를 정확히 지정해야 함
         file: ./web/Dockerfile 
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/my-store-service:latest
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/my-store-service:${{ env.IMAGE_TAG }}
+          ${{ secrets.DOCKER_USERNAME }}/my-store-service:latest
+
+    - name: Update Kubernetes YAML
+      run: |
+        # 1. k8s 폴더 내의 deployment.yaml 파일에서 이미지 정보를 최신 SHA 태그로 교체
+        sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service:${{ env.IMAGE_TAG }}|g" ./k8s/deployment.yaml
+
+        # 2. 변경된 YAML을 다시 Git 저장소에 푸시 (ArgoCD가 감지하도록)
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "github-actions"
+        git add ./k8s/deployment.yaml
+        git commit -m "chore: update image tag to ${{ env.IMAGE_TAG }} [skip ci]"
+        git push
