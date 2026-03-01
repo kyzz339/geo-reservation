@@ -28,25 +28,25 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("/signUp")
+    @GetMapping("/signup")
     public String signUp() {
-        return "auth/signUp";
+        return "auth/signup";
     }
 
-    @GetMapping("/signIn")
+    @GetMapping("/signin")
     public String signIn() {
-        return "auth/signIn";
+        return "auth/signin";
     }
 
     @ResponseBody
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
         SignUpResponse signUpResponse = authService.signUp(signUpRequest);
         return ResponseEntity.status(201).body(signUpResponse);
     }
 
     @ResponseBody
-    @PostMapping("/signIn")
+    @PostMapping("/signin")
     public ResponseEntity<TokenResponse> signIn(@RequestBody SignInRequest request){
         TokenResponse tokenResponse = authService.signIn(request);
         return ResponseEntity.ok(tokenResponse);
