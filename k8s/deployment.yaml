@@ -17,7 +17,6 @@ spec:
       containers:
         - name: my-store-service
           image: jaehyun1217/my-store-service:latest
-          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
