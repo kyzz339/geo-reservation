@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-store-service
-          image: jaehyun1217/my-store-service:29ab280
+          image: jaehyun1217/my-store-service:1c36822
           ports:
             - containerPort: 8080
           env:
