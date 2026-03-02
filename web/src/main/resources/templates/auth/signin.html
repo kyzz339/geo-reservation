@@ -49,7 +49,7 @@
             const response = await sendSignInRequest(signInData);
             await handleResponse(response);
         }catch (error){
-            alert("서버 연결에 실패하였습니다.");
+            showAlert("서버 연결에 실패하였습니다.");
         }
     }
 
@@ -77,12 +77,14 @@
             // 쿠키에도 저장 (페이지 접근 인증용)
             document.cookie = `accessToken=${tokenData.accessToken}; path=/; max-age=3600; SameSite=Strict`;
 
-            alert("로그인이 완료되었습니다.");
-            window.location.href = "/";
+            showAlert("로그인이 완료되었습니다.", () => {
+                window.location.href = "/";
+            });
         }else{
-            alert("로그인이 실패하였습니다.");
+            showAlert("로그인이 실패하였습니다.");
         }
     }
 </script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
 </body>
 </html>

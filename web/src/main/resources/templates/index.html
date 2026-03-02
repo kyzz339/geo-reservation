@@ -236,34 +236,38 @@
             finishedAt: finishedAt
         };
 
-        fetch('/reservation', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // JWT 토큰이 필요하다면 여기에 Authorization 헤더 추가
-                 'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-            },
-            body: JSON.stringify(requestData)
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    return response.json().then(err => { throw new Error(err.message || '예약 실패'); });
-                }
+        showConfirm(`${reservedAt} 시간에 ${visitorCount}명 예약을 진행하시겠습니까?`, async () => {
+            fetch('/reservation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // JWT 토큰이 필요하다면 여기에 Authorization 헤더 추가
+                    'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                },
+                body: JSON.stringify(requestData)
             })
-            .then(data => {
-                alert('예약이 성공적으로 완료되었습니다!');
-                reservationModal.hide();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('예약 중 오류가 발생했습니다: ' + error.message);
-                // 로그인 안된 경우 처리 (예: 403 Forbidden)
-                if(error.message.includes('권한') || error.message.includes('로그인')) {
-                    location.href = '/login'; // 로그인 페이지로 이동
-                }
-            });
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.json().then(err => { throw new Error(err.message || '예약 실패'); });
+                    }
+                })
+                .then(data => {
+                    showAlert('예약이 성공적으로 완료되었습니다!', () => {
+                        reservationModal.hide();
+                        location.reload(); // 리프레시하여 예약 반영
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('예약 중 오류가 발생했습니다: ' + error.message);
+                    // 로그인 안된 경우 처리 (예: 403 Forbidden)
+                    if(error.message.includes('권한') || error.message.includes('로그인')) {
+                        location.href = '/auth/signin'; // /login -> /auth/signin 수정
+                    }
+                });
+        });
     }
 </script>
 
