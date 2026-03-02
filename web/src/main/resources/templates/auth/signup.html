@@ -78,7 +78,7 @@
             const response = await sendSignUpRequest(signUpData);
             await handleResponse(response)
         }catch(error){
-            alert("서버 연결에 실패하였습니다.");
+            showAlert("서버 연결에 실패하였습니다.");
         }
     }
 
@@ -97,12 +97,14 @@
 
     async function handleResponse(response){
         if(response.ok) {
-            alert("회원가입이 완료되었습니다.");
-            window.location.href = "/auth/signin";
+            showAlert("회원가입이 완료되었습니다.", () => {
+                window.location.href = "/auth/signin";
+            });
         }else{
-            alert("회원가입 실패하였습니다.");
+            showAlert("회원가입 실패하였습니다.");
         }
     }
 </script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
 </body>
 </html>

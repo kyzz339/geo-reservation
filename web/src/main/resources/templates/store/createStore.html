@@ -180,29 +180,33 @@
         };
 
         if (!formData.latitude || !formData.longitude) {
-            alert("지도를 클릭하여 매장 위치를 선택해주세요.");
+            showAlert("지도를 클릭하여 매장 위치를 선택해주세요.");
             return;
         }
 
-        try {
-            const response = await fetchWithAuth('/store/createStore', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+        showConfirm("매장을 등록하시겠습니까?", async () => {
+            try {
+                const response = await fetchWithAuth('/store/createStore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
 
-            if (response.ok) {
-                alert("매장이 성공적으로 등록되었습니다!");
-                window.location.href = "/store/myStore";
-            } else {
-                const errData = await response.json();
-                alert("등록 실패: " + errData.message);
+                if (response.ok) {
+                    showAlert("매장이 성공적으로 등록되었습니다!", () => {
+                        window.location.href = "/store/myStore";
+                    });
+                } else {
+                    const errData = await response.json();
+                    showAlert("등록 실패: " + errData.message);
+                }
+            } catch (error) {
+                console.error("오류 발생:", error);
+                showAlert("서버 통신 중 오류가 발생했습니다.");
             }
-        } catch (error) {
-            console.error("오류 발생:", error);
-            alert("서버 통신 중 오류가 발생했습니다.");
-        }
+        });
     }
 </script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
 </body>
 </html>

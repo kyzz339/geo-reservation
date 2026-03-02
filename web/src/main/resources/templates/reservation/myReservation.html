@@ -71,15 +71,18 @@
     });
 
     async function cancelReservation(id) {
-        if(!confirm("예약을 취소하시겠습니까?")) return;
-        try {
-            const response = await fetchWithAuth(`/reservation/cancel/${id}`, { method: 'POST' });
-            if (response.ok) {
-                alert("취소되었습니다.");
-                location.reload();
-            }
-        } catch (err) { alert("취소 실패"); }
+        showConfirm("예약을 취소하시겠습니까?", async () => {
+            try {
+                const response = await fetchWithAuth(`/reservation/cancel/${id}`, { method: 'POST' });
+                if (response.ok) {
+                    showAlert("취소되었습니다.", () => {
+                        location.reload();
+                    });
+                }
+            } catch (err) { showAlert("취소 실패"); }
+        });
     }
 </script>
+<th:block th:replace="~{header/header :: header-js}"></th:block>
 </body>
 </html>
