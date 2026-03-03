@@ -8,6 +8,8 @@ public enum ErrorCode {
     CAPACITY_EXCEEDED(HttpStatus.BAD_REQUEST, "잔여 좌석이 부족합니다."),
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "예약을 찾을 수 없습니다."),
     INVALID_RESERVATION_TIME(HttpStatus.BAD_REQUEST, "예약 가능한 시간이 아닙니다."),
+    LOCK_FAILURE(HttpStatus.CONFLICT, "동시 요청으로 인해 처리에 실패했습니다. 잠시 후 다시 시도해주세요."),
+
 
     // Auth & User
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
