@@ -81,6 +81,27 @@
    java -jar web/build/libs/web-0.0.1-SNAPSHOT.jar
    ```
 
-## 🧪 테스트 (Testing)
-- Mockito를 이용한 Service 단위 테스트 및 Testcontainers 기반 통합 테스트 제공.
-- 예약 동시성 문제 해결을 위한 비관적 락 검증 테스트 포함.
+## 🧪 테스트 전략 (Testing Strategy)
+
+본 프로젝트는 서비스의 신뢰성과 유지보수성을 위해 **계층별 테스트 전략**을 수립하고 실천합니다.
+
+### 1. 단위 테스트 (Unit Testing with Mockito)
+- **Tool**: JUnit 5, Mockito
+- **목적**: 외부 의존성(DB, Redis) 없이 비즈니스 로직의 순수성을 고속으로 검증합니다.
+- **핵심 기법**:
+    - `@Mock`과 `when(...).thenReturn(...)`을 활용하여 가짜 객체의 동작을 정의하고 서비스 레이어의 로직에만 집중합니다.
+    - `@InjectMocks`를 통해 의존성을 주입하고, JUnit 5의 `Assertions`와 `AssertJ`를 사용하여 결과의 정확성을 판정합니다.
+
+### 2. 통합 테스트 (Integration Testing with Testcontainers)
+- **Tool**: Testcontainers (Docker), Spring Boot Test
+- **인프라**: **PostGIS (PostgreSQL)**, **Redis**
+- **특징**:
+    - 실제 운영 환경과 동일한 **PostGIS** 이미지를 컨테이너로 실행하여 공간 데이터(Geometry) 연산의 정확성을 실제 DB 레벨에서 검증합니다.
+    - **Redis** 컨테이너를 연동하여 실시간 캐싱 및 동시성 제어 로직의 정합성을 실제 인프라 환경에서 확인합니다.
+    - `@SpringBootTest`와 `@ActiveProfiles("test")`를 활용하여 전체 애플리케이션 컨텍스트 로드 및 빈 주입 상태를 점검합니다.
+
+### 3. 성능 및 동시성 검증 (Performance & Concurrency)
+- **Tool**: **k6**, JUnit 5 (Multi-thread)
+- **검증 내용**:
+    - 수백 명의 사용자가 동시에 예약 시 `maxCapacity` 초과 여부를 정밀하게 검증합니다.
+    - 비관적 락(`PESSIMISTIC_WRITE`) 상황에서의 성능 병목 현상을 **k6**로 수치화하여 분석하고, 예외 처리 및 롤백 매커니즘을 테스트합니다.
