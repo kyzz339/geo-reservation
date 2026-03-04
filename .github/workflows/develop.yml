@@ -5,9 +5,8 @@ name: develop CI with Gradle and Docker (Multi-Module)
 #schedule	정해진 시간에 자동 실행	정기 점검 및 배치 작업
 #workflow_run	다른 액션이 끝난 뒤 실행	파이프라인 연계용
 on:
-  pull_request:
-    branches: ["develop"]
-    types: [opened, synchronize] # pr이 업데이트 될때 실행
+  push:
+    branches: [ "develop" ] # pr이 업데이트 될때 실행
 
 permissions:
   contents: write
@@ -84,12 +83,12 @@ jobs:
 
       - name: Update Kubernetes YAML
         run: |
-          sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:${{ needs.build.outputs.image_tag }}|g" ./k8s/deployment-dev.yaml
+          sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:${{ needs.build.outputs.image_tag }}|g" ./k8s-dev/deployment-dev.yaml
           
           #sed -i "s|image: 유저명/이미지명:.*|image: 유저명/이미지명:새태그|g" 파일경로 -> 파일 수정 , 파일 내부에 image 찾아서 변경
           
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
-          git add ./k8s/deployment-dev.yaml
+          git add ./k8s-dev/deployment-dev.yaml
           git commit -m "chore: update dev image tag [skip ci]"
           git push
