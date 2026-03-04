@@ -28,6 +28,8 @@ jobs:
   build:
     needs: test #test가 성공해야 시작
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.set_sha.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
