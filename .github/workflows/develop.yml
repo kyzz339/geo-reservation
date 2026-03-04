@@ -84,25 +84,12 @@ jobs:
 
       - name: Update Kubernetes YAML
         run: |
-          # 1. 파일의 실제 경로를 찾아서 변수에 저장 (경로가 ./k8s/ 가 아닐 경우를 대비)
-          # 파일명이 deployment-dev.yaml 인지 한 번 더 확인하세요!
-          TARGET_FILE=$(find . -name "deployment-dev.yaml" | head -n 1)
+          sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:${{ needs.build.outputs.image_tag }}|g" ./k8s/deployment-dev.yaml
           
-          if [ -z "$TARGET_FILE" ]; then
-            echo "❌ 에러: deployment-dev.yaml 파일을 찾을 수 없습니다!"
-            ls -R
-            exit 1
-          fi
+          #sed -i "s|image: 유저명/이미지명:.*|image: 유저명/이미지명:새태그|g" 파일경로 -> 파일 수정 , 파일 내부에 image 찾아서 변경
           
-          echo "✅ 파일을 찾았습니다: $TARGET_FILE"
-          
-          # 2. 이미지 태그 수정 (sed 명령어 실행)
-          sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-store-service-dev:${{ needs.build.outputs.image_tag }}|g" "$TARGET_FILE"
-          
-          # 3. Git 설정 및 푸시
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
-          
-          git add "$TARGET_FILE"
-          git commit -m "chore: update dev image tag to ${{ needs.build.outputs.image_tag }} [skip ci]"
+          git add ./k8s/deployment-dev.yaml
+          git commit -m "chore: update dev image tag [skip ci]"
           git push
