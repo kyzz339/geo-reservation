@@ -1,0 +1,38 @@
+apiVersion: app/v1
+kind: Deployment
+metadata:
+  name: my-store-service-dev
+  labels:
+    app: my-store-service-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-store-service-dev
+  template:
+    metadata:
+      labels:
+        app: my-store-service-dev
+    spec:
+      containers:
+        - name: my-store-service-dev
+          image: jaehyun1217/my-store-service-dev:1234
+          ports:
+          - containerPort: 8080
+          env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: "develop"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-store-service-svc-dev
+spec:
+  selector:
+    app: my-store-service-dev
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
