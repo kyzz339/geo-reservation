@@ -10,12 +10,12 @@ import { check, sleep } from 'k6';
 export const options = {
     scenarios: {
         constant_request_rate: {
-            executor: 'constant-arrival-rate',
-            rate: 10, // 1초당 10개의 요청 시도
-            timeUnit: '1s',
-            duration: '30s',
-            preAllocatedVUs: 10,
-            maxVUs: 50,
+            executor: 'constant-arrival-rate', // 일정한 속도로 요청을 생성하는 방식
+            rate: 10,                          // 초당 요청 횟수 (목표치)
+            timeUnit: '1s',                    // rate 수치의 시간 단위 (1초)
+            duration: '30s',                   // 테스트 총 지속 시간
+            preAllocatedVUs: 10,               // 시작 시 미리 할당할 가상 사용자 수
+            maxVUs: 50,                        // 목표 rate 유지를 위해 동원 가능한 최대 가상 사용자 수
         },
     },
 };
@@ -53,8 +53,8 @@ export default function (data) {
     const payload = JSON.stringify({
         storeId: TARGET_STORE_ID,
         visitorCount: 1,
-        reservedAt: "2026-03-10T14:00:00",
-        finishedAt: "2026-03-10T15:00:00",
+        reservedAt: "2026-03-17T11:00:00",
+        finishedAt: "2026-03-17T12:00:00",
     });
 
     const params = {

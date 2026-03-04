@@ -1,57 +1,37 @@
-# 예약 시스템 동시성 제어 테스트 결과 보고서 (수정본)
+# 예약 시스템 동시성 제어 테스트 결과 보고서 (V1 최종본)
 
-본 문서는 `k6`를 이용한 예약 시스템의 비관적 락(Pessimistic Lock)과 낙관적 락(Optimistic Lock) 테스트 결과를 분석하고, 실제 매커니즘 작동 및 롤백 발생 원인과 개선 방안을 정리합니다.
+본 문서는 `k6`를 이용한 비관적 락(Pessimistic Lock)과 낙관적 락(Optimistic Lock)의 실전 테스트 결과를 비교 분석하고, 차세대 아키텍처 도입의 근거 데이터를 정리합니다.
 
-## 1. 테스트 결과 요약
+## 1. 테스트 환경 및 설정
+- **Tool**: k6 (Load Testing Tool)
+- **Scenario**: 초당 10건의 예약 요청을 30초간 지속 (Total 300 iterations)
+- **Target**: Store ID 1 (Max Capacity: 100)
 
-### A. 비관적 락 (Pessimistic Lock) 테스트
-- **성공률**: 0.35% (1 / 290 성공)
-- **실패율**: 99.65% (HTTP 500)
-- **원인 분석**: 모든 요청이 동일한 `Store` 엔티티에 대해 `PESSIMISTIC_WRITE` 락을 획득하려고 대기하면서 병목이 발생했습니다. 락 획득 타임아웃이나 커넥션 풀 고갈로 인해 대부분 500 에러가 발생했습니다.
+## 2. 락 전략별 비교 분석 결과
 
-### B. 낙관적 락 (Optimistic Lock) 테스트
-- **성공률**: 0.33% (1 / 300 성공)
-- **실패율**: 99.67% (HTTP 500)
-- **분석 내용**:
-    - **실제 낙관적 락 작동**: 테스트 당시 실제 낙관적 락 매커니즘이 활성화된 상태였습니다.
-    - **롤백 발생**: 다수의 요청이 동일한 엔티티의 버전을 동시에 수정하려 시도함에 따라 `ObjectOptimisticLockingFailureException`이 발생했습니다.
-    - **500 에러 발생 원인**: 스프링 트랜잭션 내에서 예외가 발생하여 트랜잭션이 **롤백(Rollback)** 되었으나, 이 예외를 가로채어 적절한 응답(예: 409 Conflict)으로 변환하는 처리기가 없어 최종적으로 클라이언트에 500 Internal Server Error로 전달되었습니다.
-
----
-
-## 2. 문제 해결을 위한 수정 가이드
-
-### ① 전역 예외 처리기 (GlobalExceptionHandler) 보완
-락 충돌로 인한 예외 발생 시 500 에러가 아닌 사용자 친화적인 응답을 주어야 합니다.
-
-```java
-@ExceptionHandler({PessimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class})
-public ResponseEntity<ErrorResponse> handleLockingFailure(Exception e) {
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
-            .status(409)
-            .code("LOCK_FAILURE")
-            .message("동시 요청으로 인해 처리에 실패했습니다. 잠시 후 다시 시도해주세요.")
-            .build());
-}
-```
-
-### ② 낙관적 락을 위한 재시도 로직 도입
-낙관적 락은 충돌이 발생했을 때 재시도(Retry)를 하지 않으면 성공률이 매우 낮습니다. `spring-retry`를 사용하거나 직접 재시도 로직을 구현해야 합니다.
-
-```java
-@Retryable(value = ObjectOptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 100))
-@Transactional
-public CreateReservationResponse createReservation(...) { ... }
-```
-
-### ③ 락 범위 최적화 (비관적 락 개선)
-- **락 타임아웃**: `PESSIMISTIC_WRITE` 사용 시 무한정 대기하지 않도록 힌트를 추가합니다.
-- **분산 락 (Redisson)**: DB 락의 부하를 줄이기 위해 프로젝트에 포함된 Redis 기반 분산 락을 사용하는 것이 성능상 가장 유리합니다.
+| 지표 | 비관적 락 (Pessimistic) | 낙관적 락 (Optimistic) | 비고 |
+| :--- | :---: | :---: | :--- |
+| **성공 건수** | 100건 (33%) | **100건 (33%)** | 데이터 정합성 동일 유지 |
+| **평균 응답 시간** | 102.62ms | **59.26ms** | **낙관적 락 42% 성능 우위** |
+| **최대 응답 시간** | 1.04s | **498.99ms** | **낙관적 락 2배 이상 쾌적** |
+| **실패 원인** | 락 대기 타임아웃 (500) | 버전 충돌 실패 (500) | 재시도 로직 부재 시 동일 실패율 |
 
 ---
 
-## 3. 요약 및 필요 작업
-1. **[필수]** `@Version` 필드가 누락되어 있다면 `Store` 엔티티에 추가 (테스트 시에만 넣었다면 정식 반영 필요).
-2. **[필수]** `GlobalExceptionHandler`에 락 관련 예외 처리 추가 (500 에러 방지).
-3. **[권장]** 충돌 발생 시 자동 재시도를 위한 `@Retryable` 또는 수동 재시도 로직 구현.
-4. **[성능]** 더 높은 동시 처리를 원한다면 Redis 분산 락(Redisson) 도입 검토.
+## 3. 기술적 결론 및 시사점
+
+### 1) 비관적 락 (DB 수준의 강한 잠금)
+- **장점**: 충돌이 빈번할 때 데이터 무결성을 가장 확실하게 보장함.
+- **단점**: DB 커넥션 점유 시간이 길어 서비스 가용성이 저하됨. 대기 시간이 길어질수록 시스템 전체가 마비될 위험(Cascade Failure)이 큼.
+
+### 2) 낙관적 락 (애플리케이션 수준의 버전 체크)
+- **장점**: 자물쇠를 채우지 않으므로 응답 속도가 매우 빠르고 서버 자원을 덜 소모함.
+- **단점**: 충돌이 발생하면 즉시 예외를 던지므로, **재시도(Retry) 로직**이 없으면 성공률이 극도로 낮아짐. 현재 0.5초 이내의 빠른 응답 속도를 확인했으나, 충돌 처리의 복잡성이 존재함.
+
+## 4. 최종 개선 방향 (V2 Roadmap)
+
+두 방식의 한계를 극복하기 위해 **Redis 분산 락** 도입을 확정합니다.
+
+- **성능**: 낙관적 락의 빠른 응답성 확보 (메모리 기반 연산)
+- **안정성**: 비관적 락의 순차 처리 보장 (대기열 및 락 타임아웃 세밀 제어)
+- **가용성**: DB 커넥션을 점유하지 않고 외부에서 락을 관리하여 시스템 마비 방지
