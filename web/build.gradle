@@ -54,7 +54,6 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'com.h2database:h2'
-    testImplementation 'org.redisson:redisson-spring-boot-starter:3.24.3'
     testImplementation 'org.locationtech.jts:jts-core'
     //testImplementation 'com.h2database:h2:2.2.224'
     testImplementation "org.testcontainers:postgresql:1.19.0"

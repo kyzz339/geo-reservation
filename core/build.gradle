@@ -33,8 +33,6 @@ dependencies {
     api 'org.geolatte:geolatte-geom:1.9.1'
     //redis - token 저장
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    //redisson - 분산 락 설정
-    implementation 'org.redisson:redisson-spring-boot-starter:3.24.3'
     // === Test (JUnit 5.11 + Gradle 8.14 호환) ===
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage'

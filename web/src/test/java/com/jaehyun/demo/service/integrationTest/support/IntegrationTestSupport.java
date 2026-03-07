@@ -37,9 +37,11 @@ public abstract class IntegrationTestSupport {
     static void overrideProps(DynamicPropertyRegistry registry){
         registry.add("spring.data.redis.host",REDIS_CONTAINER::getHost);
         registry.add("spring.data.redis.port",() -> REDIS_CONTAINER.getMappedPort(6379));
+        registry.add("spring.data.redis.password", () -> "");
 
         registry.add("spring.redis.host", REDIS_CONTAINER::getHost);
         registry.add("spring.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379));
+        registry.add("spring.redis.password", () -> "");
 
         registry.add("spring.datasource.url", POSTGIS_CONTAINER::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGIS_CONTAINER::getUsername);
