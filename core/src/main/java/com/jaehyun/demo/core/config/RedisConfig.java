@@ -17,10 +17,17 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.password}")
+    private String password;
+
     //redis 연결 팩토리 -> Lettuce 방식
     @Bean
     public RedisConnectionFactory redisConnectionFactory(){
-        return new LettuceConnectionFactory(host , port);
+        org.springframework.data.redis.connection.RedisStandaloneConfiguration config =
+                new org.springframework.data.redis.connection.RedisStandaloneConfiguration(host, port);
+        config.setPassword(password);
+
+        return new LettuceConnectionFactory(config);
     }
 
     @Bean
