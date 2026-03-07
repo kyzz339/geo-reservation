@@ -11,10 +11,10 @@ export const options = {
     scenarios: {
         constant_request_rate: {
             executor: 'constant-arrival-rate',
-            rate: 10, // 1초당 10개의 요청 시도
+            rate: 40, // 1초당 40개의 요청 시도
             timeUnit: '1s',
             duration: '30s',
-            preAllocatedVUs: 10,
+            preAllocatedVUs: 30,
             maxVUs: 50,
         },
     },
@@ -53,8 +53,8 @@ export default function (data) {
     const payload = JSON.stringify({
         storeId: TARGET_STORE_ID,
         visitorCount: 1,
-        reservedAt: "2026-03-10T14:00:00",
-        finishedAt: "2026-03-10T15:00:00",
+        reservedAt: "2026-03-19T14:00:00",
+        finishedAt: "2026-03-19T15:00:00",
     });
 
     const params = {
