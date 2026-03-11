@@ -1,10 +1,10 @@
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgres-server-postgresql.dev.svc.cluster.local:5432/mydb_dev
-    username: jaehyun
-    password: "111111!!"
-  data:
+    url: jdbc:postgresql://postgres-server-postgresql.dev.svc.cluster.local:5432/mydb_dev #서비스 이름 : postgres-server-postgresql
+    username: jaehyun                                                                     #네임 스페이스 : dev
+    password: "111111!!"                                                                  #리소스 타입 : svc
+  data:                                                                                   #클러스터 도메인 : cluster.local
     redis:
       host: my-redis-master.dev.svc.cluster.local
       port: 6379
@@ -25,3 +25,9 @@ jwt:
   secret: jjjhhhyyyuunnn1241241241k2j4b12jk4b1j4k
   access-token-validity: 1800000     # 30분
   refresh-token-validity: 604800000  # 7일
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
