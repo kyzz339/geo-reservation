@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-store-service-dev
-          image: jaehyun1217/my-store-service-dev:a815ef7
+          image: jaehyun1217/my-store-service-dev:ac8e24f
           ports:
           - containerPort: 8080
           env:
