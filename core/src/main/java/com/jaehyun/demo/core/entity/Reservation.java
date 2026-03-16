@@ -2,63 +2,42 @@ package com.jaehyun.demo.core.entity;
 
 import com.jaehyun.demo.core.enums.ReservationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Data
-@Entity
-@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
 @Table(name = "reservations")
-public class Reservation{
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class Reservation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // User 관계 (여러 예약 → 한 유저)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    // Store 관계 (여러 예약 → 한 매장)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    @Column(nullable = false)
+    private Integer visitorCount;
 
     @Column(nullable = false)
-    private Integer visitorCount; //예약 인원 수
+    private LocalDateTime reservedAt;
 
     @Column(nullable = false)
-    private LocalDateTime reservedAt; // 예약한 시각
-
-    @Column(nullable = false)
-    private LocalDateTime finishedAt; //종료 시간
+    private LocalDateTime finishedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status;
 
-    @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private  LocalDateTime updatedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
 }

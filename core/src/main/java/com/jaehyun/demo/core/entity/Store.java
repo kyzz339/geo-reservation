@@ -1,31 +1,21 @@
 package com.jaehyun.demo.core.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
-@Data
-@Entity
-@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
 @Table(name = "stores")
-public class Store{
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class Store extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +27,7 @@ public class Store{
     @Column
     private String description;
 
-    @Column(nullable =false, columnDefinition = "geometry(Point, 4326)")
+    @Column(nullable = false, columnDefinition = "geometry(Point, 4326)")
     private Point location;
 
     @Column
@@ -52,25 +42,20 @@ public class Store{
     @Column
     private LocalTime closeTime;
 
-    @Column
+    @Column(nullable = false)
     private boolean active;
 
-    @Column
+    @Column(nullable = false)
     private boolean deleted;
 
     @Column
     private LocalDateTime deletedAt;
 
-    @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(nullable = true)
-    private  LocalDateTime updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id" , nullable = true)
+    @JoinColumn(name = "owner_id")
     private User owner;
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<Reservation> reservations;
 
 }
